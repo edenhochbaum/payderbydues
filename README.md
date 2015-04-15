@@ -1,2 +1,2 @@
 # payderbydues
-payderbydues code repository
+Code to support derby!
