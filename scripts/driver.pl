@@ -3,17 +3,25 @@ use warnings;
 
 BEGIN {
 	$\ = "\n";
-	push(@INC, "$ENV{HOME}/source/payderbydues/perlmodules/");
+
+	# change to PERL5LIB
+	push(@INC, "$ENV{HOME}/perl5/lib/perl5/x86_64-linux-thread-multi/", "$ENV{PAYDERBYDUESHOME}/perlmodules/");
 }
 
 use Utilities::DBConnect;
-use List::Util;
-use DBD::Pg;
 
-Utilities::DBConnect::HelloWorld();
+my $dbh = Utilities::DBConnect::GetDBH();
 
-print join("\n", @INC);
+use Data::Dumper;
+print Data::Dumper::Dumper($dbh);
 
-my $val = List::Util::max (5, 10, 100, 45);
+my $sqlquery = "select * from company";
 
-print $val;
+my $sth = $dbh->prepare($sqlquery);
+
+$sth->execute();
+
+while(my @row = $sth->fetchrow_array) {
+	print Data::Dumper::Dumper(\@row);
+}
+
