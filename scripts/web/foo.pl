@@ -16,6 +16,8 @@ my $dbh = Utilities::DBConnect::GetDBH();
 
 print CGI_HEADER;
 
+print 'and updated';
+
 my $sqlquery = "select * from company";
 
 my $sth = $dbh->prepare($sqlquery);
