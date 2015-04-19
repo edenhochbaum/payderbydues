@@ -1,3 +1,5 @@
+#!/usr/bin/perl
+
 use strict;
 use warnings;
 
@@ -5,12 +7,14 @@ BEGIN {
 	$\ = "\n";
 }
 
+use constant CGI_HEADER => "Content-type: text/html\n\n";
+
+use Data::Dumper;
 use Utilities::DBConnect;
 
 my $dbh = Utilities::DBConnect::GetDBH();
 
-use Data::Dumper;
-print Data::Dumper::Dumper($dbh);
+print CGI_HEADER;
 
 my $sqlquery = "select * from company";
 
