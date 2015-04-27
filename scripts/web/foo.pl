@@ -36,7 +36,7 @@ my $TEMPLATE = qq!
 <html>
   <table>
 	{{#each rows}}
-	<tr><td>foo <td>{{bar}} </tr>
+	<tr><td>hbx <td>{{bar}} </tr>
 	{{/each}}
   </table>
 </html>
