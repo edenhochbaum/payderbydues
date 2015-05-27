@@ -16,7 +16,7 @@ my $app = sub {
 	if (my $match = $router->match($env)) {
 		return [
 			200,
-			[ 'Content-Type' => 'text/plain' ], 
+			[ 'Content-Type' => 'text/html' ], 
 			$match->{method}->($match, $env),
 		];
 	}
