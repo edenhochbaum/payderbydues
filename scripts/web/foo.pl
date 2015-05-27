@@ -3,20 +3,14 @@
 use strict;
 use warnings;
 
-BEGIN {
-	$\ = "\n";
-}
-
-use constant CGI_HEADER => "Content-type: text/html\n\n";
-
+use Text::Handlebars;
 use Data::Dumper;
+
 use Utilities::DBConnect;
 
+print "Content-type: text/html\n\n";
+
 my $dbh = Utilities::DBConnect::GetDBH();
-
-print CGI_HEADER;
-
-print 'and updated';
 
 my $sqlquery = "select * from company";
 
@@ -24,8 +18,29 @@ my $sth = $dbh->prepare($sqlquery);
 
 $sth->execute();
 
-while(my @row = $sth->fetchrow_array) {
-	print Data::Dumper::Dumper(\@row);
-}
+my $data = $sth->fetchall_arrayref; # array ref of array refs
 
+@$data = map {;+{bar => join(', ', @$_)}} @$data;
+
+my $handlebars = Text::Handlebars->new(
+      helpers => {
+		# define various helper subs here
+      },
+);
+
+my $vars = {
+	rows => $data,
+};
+
+my $TEMPLATE = qq!
+<html>
+  <table>
+	{{#each rows}}
+	<tr><td>hbx <td>{{bar}} </tr>
+	{{/each}}
+  </table>
+</html>
+!;
+
+print $handlebars->render_string($TEMPLATE, $vars);
 
