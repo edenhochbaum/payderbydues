@@ -1,7 +1,7 @@
 use Router::Simple;
 use Text::Handlebars;
 use Data::Dumper;
-use Utilities::DBConnect;
+use PayDerbyDues::Utilities::DBConnect;
 
 my $HTML_HEADERS = [ 'Content-Type' => 'text/html' ];
 my $PLAIN_HEADER = [ 'Content-Type' => 'text/plain' ];
@@ -64,7 +64,7 @@ sub _foo {
 	my $handlebars = Text::Handlebars->new();
 	my $TEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/handlebarstemplates/foo.handlebars');
 
-	my $dbh = Utilities::DBConnect::GetDBH();
+	my $dbh = PayDerbyDues::Utilities::DBConnect::GetDBH();
 	my $sqlquery = "select * from company";
 	my $sth = $dbh->prepare($sqlquery);
 	$sth->execute();
@@ -108,12 +108,12 @@ sub _index {
 sub _arcady {
 	my ($match, $env) = @_;
 
-	require DerbyDues;
+	require PayDerbyDues::DerbyDues;
 
 	$headers = [ 'Content-Type' => 'text/html'];
 
 	eval {
-		$body = DerbyDues::request($env);
+		$body = PayDerbyDues::DerbyDues::request($env);
 		$status = 200;
 	};
 	if ($@) {
