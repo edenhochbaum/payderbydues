@@ -3,35 +3,57 @@ use Text::Handlebars;
 use Data::Dumper;
 use Utilities::DBConnect;
 
+my $HTML_HEADERS = [ 'Content-Type' => 'text/html' ];
+my $PLAIN_HEADER = [ 'Content-Type' => 'text/plain' ];
+my $SUCCESS_STATUS = 200;
+
 my $router = Router::Simple->new();
 
 $router->connect('/', { method => \&_index });
 $router->connect('/getenv', { method => \&_get_env });
 $router->connect('/foo', { method => \&_foo });
 $router->connect('/hello', { method => \&_hello });
+$router->connect('/arcady', { method => \&_arcady });
 
 my $app = sub {
 	my $env = shift;
+	my ($status, $headers, $body);
 
 	if (my $match = $router->match($env)) {
-		return [
-			200,
-			[ 'Content-Type' => 'text/html' ], 
-			$match->{method}->($match, $env),
-		];
+		eval {
+			($status, $headers, $body) = @{ $match->{method}->($match, $env) };
+		};
+		if ($@) {
+			$status = 500;
+			$headers = [ 'Content-Type' => 'text/plain' ];
+			$body = "ERROR!!! $@";
+		}
+	}
+	else {
+		($status, $headers, $body) = (404, [], 'routing failed');
 	}
 
+	warn 'about to return: ' . Dumper([
+		$status,
+		$headers,
+		[$body],
+	]);
+
 	return [
-		404,
-		[],
-		['not found'],
+		$status,
+		$headers,
+		[$body],
 	];
 };
 
 sub _get_env {
 	my ($match, $env) = @_;
 
-	return [ Dumper(\%ENV) ];
+	return [
+		200,
+		$HTML_HEADERS,
+		Dumper(\%ENV),
+	];
 }
 
 sub _foo {
@@ -55,18 +77,49 @@ sub _foo {
 		rows => $data,
 	};
 
-	return [$handlebars->render_string($TEMPLATE, $vars)];
+	return [
+		$SUCCESS_STATUS,
+		$HTML_HEADERS,
+		$handlebars->render_string($TEMPLATE, $vars),
+	];
 }
 
 
 sub _hello {
 	my ($match, $env) = @_;
 
-	return [ 'in hello with match and environment: ' . Dumper([$match, $env])],
+	return [
+		$SUCCESS_STATUS,
+		$HTML_HEADERS,
+		'in hello with match and environment: ' . Dumper([$match, $env]),
+	];
 }
 
 sub _index {
 	my ($match, $env) = @_;
 
-	return [ q{<font color="green">Hello World payderbydues</font>} ],
+	return [
+		$SUCCESS_STATUS,
+		$HTML_HEADERS,
+		q{<font color="green">Hello World payderbydues</font>},
+	];
+}
+
+sub _arcady {
+	my ($match, $env) = @_;
+
+	require DerbyDues;
+
+	$headers = [ 'Content-Type' => 'text/html'];
+
+	eval {
+		$body = DerbyDues::request($env);
+		$status = 200;
+	};
+	if ($@) {
+		$status = 500;
+		$body = "ERROR!!! $@";
+	}
+
+	return [ $status, $headers, $body ];
 }
