@@ -31,7 +31,7 @@ my $app = sub {
 sub _get_env {
 	my ($match, $env) = @_;
 
-	print Dumper(\%ENV);
+	return [ Dumper(\%ENV) ];
 }
 
 sub _foo {
