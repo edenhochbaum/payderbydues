@@ -15,7 +15,6 @@ $router->connect('/foo', { method => \&_foo });
 $router->connect('/hello', { method => \&_hello });
 $router->connect('/arcady', { method => \&_arcady });
 $router->connect('/test', { method => \&_test });
-$router->connect('/home', { method => \&_home });
 
 my $app = sub {
 	my $env = shift;
@@ -73,21 +72,6 @@ sub _test {
 	];
 }
 
-sub _home {
-	my ($match, $env) = @_;
-
-	require File::Slurp;
-
-	my $handlebars = Text::Handlebars->new();
-	my $TEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/home.hbs');
-
-	return [
-		$SUCCESS_STATUS,
-		$HTML_HEADERS,
-		$handlebars->render_string($TEMPLATE, {}),
-	];
-}
-
 sub _foo {
 	my ($match, $env) = @_;
 
@@ -130,10 +114,15 @@ sub _hello {
 sub _index {
 	my ($match, $env) = @_;
 
+	require File::Slurp;
+
+	my $handlebars = Text::Handlebars->new();
+	my $TEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/index.hbs');
+
 	return [
 		$SUCCESS_STATUS,
 		$HTML_HEADERS,
-		q{<font color="green">Hello World payderbydues</font>},
+		$handlebars->render_string($TEMPLATE, {}),
 	];
 }
 
