@@ -13,8 +13,9 @@ define(function (require) {
 });
 */
 
-define(["jquery", "jquery.alpha", "jquery.beta", "bootstrap"], function($) {
-		$(function() {
-			$('body').alpha().beta();
+define(["jquery", "bootstrap", "datatables"], function($) {
+		$(document).ready(function() {
+			alert('hello world');
+			$('table.datatable').dataTable();
 		});
 });

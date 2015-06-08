@@ -11,7 +11,9 @@ requirejs.config({
 		// or if module ID is "jquery", load it from the cdn 
 		jquery: '//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min',
 		// or if module ID is "bootstrap" . . . 
-		bootstrap: '//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js'
+		bootstrap: '//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min',
+		// or if etc . . .
+		datatables: '//cdn.datatables.net/1.10.7/js/jquery.dataTables.min'
 	},
 	shim: {
 		/* set bootstrap dependencies (just jQuery) */

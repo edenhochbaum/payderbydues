@@ -1,7 +1,37 @@
-<html>
-  <table>
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<meta charset="utf-8">
+			<meta http-equiv="X-UA-Compatible" content="IE=edge">
+			<meta name="viewport" content="width=device-width, initial-scale=1">
+			<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+			<meta name="description" content="">
+			<meta name="author" content="">
+			<link rel="icon" href="../../favicon.ico">
+
+			<title>Foo</title>
+
+			<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+			<link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css">
+
+			<script data-main="www/js/app" src="www/js/lib/require.js"></script>
+  	</head>
+
+  <table id="example" class="datatable display">
+	<thead>
+		<tr>
+			<th>Foo</th>
+			<th>Bar</th>
+		</tr>
+	</thead>
+
+	<tbody>
         {{#each rows}}
-        <tr><td>foo <td>{{bar}} </tr>
+        <tr>
+			<td>foo</td>
+			<td>{{bar}}</td>
+		 </tr>
         {{/each}}
+	</tbody>
   </table>
 </html>
