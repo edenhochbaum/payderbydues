@@ -15,7 +15,6 @@ define(function (require) {
 
 define(["jquery", "bootstrap", "datatables"], function($) {
 		$(document).ready(function() {
-			alert('hello world');
 			$('table.datatable').dataTable();
 		});
 });
