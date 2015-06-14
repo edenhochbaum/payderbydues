@@ -1,10 +1,7 @@
 package Auth::Middleware;
 
-use v5.20;
-use feature 'signatures';
 use strict;
 use warnings;
-no warnings 'experimental::signatures';
 
 use Plack::Request;
 use Plack::Response;
@@ -16,8 +13,10 @@ my %defconfig = (
     timeout_sec => 30 * 60,
     );
 
-sub dispatch($app, $env, $dbh, %config)
+sub dispatch
 {
+    my ($app, $env, $dbh, %config) = @_;
+
     my $req = Plack::Request->new($env);
     if (exists $routes{$req->path}) {
         return $routes{$req->path}->($req, $dbh, %config);
@@ -40,8 +39,10 @@ sub dispatch($app, $env, $dbh, %config)
     }
 }
 
-sub login($req, $dbh, %config)
+sub login
 {
+    my ($req, $dbh, %config) = @_;
+
     if ($req->method eq 'POST') {
         my $auth = Auth::Data->new($dbh);
         my $user = $req->query_parameters->{username};
@@ -76,13 +77,16 @@ sub login($req, $dbh, %config)
     }
 }
 
-sub _redirect_target($req, %config)
+sub _redirect_target
 {
+    my ($req, %config) = @_;
     return $req->query_parameters->{redirect_to} || $config{unauthredirect};
 }
 
-sub newuser($req, $dbh, %config)
+sub newuser
 {
+    my ($req, $dbh, %config) = @_;
+
     if ($req->method eq 'POST') {
         my $auth = Auth::Data->new($dbh);
         my $params = $req->body_parameters();
@@ -96,8 +100,10 @@ sub newuser($req, $dbh, %config)
     }
 }
 
-sub wrap($app, %userconfig)
+sub wrap
 {
+    my ($app, %userconfig) = @_;
+
     my %config = (%defconfig, %userconfig);
     
     return sub {
