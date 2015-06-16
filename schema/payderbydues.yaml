@@ -1,0 +1,75 @@
+extension plpgsql:
+  description: PL/pgSQL procedural language
+  owner: rdsadmin
+  schema: pg_catalog
+  version: '1.0'
+schema public:
+  description: standard public schema
+  owner: ehochbaum
+  privileges:
+  - ehochbaum:
+    - all
+  - PUBLIC:
+    - all
+  table company:
+    columns:
+    - id:
+        not_null: true
+        type: integer
+    - name:
+        not_null: true
+        type: text
+    - age:
+        not_null: true
+        type: integer
+    - address:
+        type: character(50)
+    - salary:
+        type: real
+    owner: ehochbaum
+    primary_key:
+      company_pkey:
+        columns:
+        - id
+  table tokens:
+    columns:
+    - userid:
+        type: integer
+    - token:
+        not_null: true
+        type: character varying(64)
+    - expires:
+        type: timestamp without time zone
+    foreign_keys:
+      tokens_userid_fkey:
+        columns:
+        - userid
+        references:
+          columns:
+          - id
+          schema: public
+          table: users
+    owner: ehochbaum
+    primary_key:
+      tokens_pkey:
+        columns:
+        - token
+  table users:
+    columns:
+    - id:
+        not_null: true
+        type: integer
+    - email:
+        type: character varying
+    - password:
+        type: character varying
+    owner: ehochbaum
+    primary_key:
+      users_pkey:
+        columns:
+        - id
+    unique_constraints:
+      users_email_key:
+        columns:
+        - email
+
