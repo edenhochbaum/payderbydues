@@ -17,7 +17,7 @@ sub _clean_tokens
 {
     my ($self, $date) = @_;
 
-    $self->dbh->do(qq{
+    $self->{dbh}->do(qq{
         DELETE FROM tokens WHERE expires < datetime(now)
     });
 }
@@ -40,7 +40,7 @@ sub _set_token
     my ($self, $user , $validity) = @_;
 
     my $token = _gen_token();
-    $self->dbh->do(q{
+    $self->{dbh}->do(q{
         INSERT INTO tokens (username, token, expires) VALUES (?, ?, now() + ?))
     }, {}, $user, $token, "$validity");
     
@@ -52,7 +52,7 @@ sub auth
     my ($self, $user, $pass, $validity) = @_;
     $validity //= '1 day';
 
-    my $dbpass = $self->dbh->selectcol_arrayref(q{SELECT password FROM users WHERE username = ?}, {}, $user);
+    my $dbpass = $self->{dbh}->selectcol_arrayref(q{SELECT password FROM users WHERE username = ?}, {}, $user);
     if (!$dbpass || @$dbpass != 1) {
         die "no such user!";
     }
@@ -70,7 +70,7 @@ sub check
     my ($self, $token) = @_;
 
     my $packedtoken = pack('h*', split '', $token);
-    my $usernames = $self->dbh->selectcol_arrayref(q{SELECT username FROM tokens WHERE token = ? AND expires >= now()}, {}, );
+    my $usernames = $self->{dbh}->selectcol_arrayref(q{SELECT userid FROM tokens WHERE token = ? AND expires >= now()}, {}, $packedtoken);
     if (@$usernames == 1) {
         return $usernames->[0];
     }
@@ -85,8 +85,8 @@ sub newuser
 
     my $crypted = bcrypt->crypt(text => $password, cost => 12);
 
-    $self->dbh->do(qq{INSERT INTO users (username, password) VALUES (?, ?)}, {},
-                   $username, $crypted);    
+    $self->{dbh}->do(qq{INSERT INTO users (username, password) VALUES (?, ?)}, {},
+		     $username, $crypted);
 }
 
 1;
