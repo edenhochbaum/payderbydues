@@ -10,7 +10,7 @@ my $SUCCESS_STATUS = 200;
 my $router = Router::Simple->new();
 
 $router->connect('/', { method => \&_index });
-$router->connect('/getenv', { method => \&_get_env });
+#$router->connect('/getenv', { method => \&_get_env });
 $router->connect('/foo', { method => \&_foo });
 $router->connect('/hello', { method => \&_hello });
 $router->connect('/arcady', { method => \&_arcady });
