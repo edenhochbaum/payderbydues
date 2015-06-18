@@ -6,3 +6,6 @@ dbtoyaml -H foxtrot.cdcnwhesdbho.us-west-2.rds.amazonaws.com -U ehochbaum payder
 
 # connect via psql
 psql --host=foxtrot.cdcnwhesdbho.us-west-2.rds.amazonaws.com --username=ehochbaum --password --dbname="payderbydues"
+
+# using sequences in PostgreSQL
+see http://www.neilconway.org/docs/sequences/
