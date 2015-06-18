@@ -1,0 +1,8 @@
+# just a place to store some useful notes 
+
+# get yaml utput of schema (and v.v.)
+yamltodb -H foxtrot.cdcnwhesdbho.us-west-2.rds.amazonaws.com -U ehochbaum payderbydues ~/payderbydues/schema/payderbydues.yaml -W
+dbtoyaml -H foxtrot.cdcnwhesdbho.us-west-2.rds.amazonaws.com -U ehochbaum payderbydues -W > ~/payderbydues/schema/payderbydues.yaml
+
+# connect via psql
+psql --host=foxtrot.cdcnwhesdbho.us-west-2.rds.amazonaws.com --username=ehochbaum --password --dbname="payderbydues"
