@@ -11,6 +11,15 @@ schema public:
     - all
   - PUBLIC:
     - all
+  sequence feeschedule_id_seq:
+    cache_value: 1
+    increment_by: 1
+    max_value: null
+    min_value: null
+    owner: ehochbaum
+    owner_column: id
+    owner_table: feeschedule
+    start_value: 1
   sequence league_id_seq:
     cache_value: 1
     increment_by: 1
@@ -20,6 +29,57 @@ schema public:
     owner_column: id
     owner_table: league
     start_value: 1
+  table company:
+    columns:
+    - id:
+        not_null: true
+        type: integer
+    - name:
+        not_null: true
+        type: text
+    - age:
+        not_null: true
+        type: integer
+    - address:
+        type: character(50)
+    - salary:
+        type: real
+    owner: ehochbaum
+    primary_key:
+      company_pkey:
+        columns:
+        - id
+  table feeschedule:
+    columns:
+    - id:
+        default: nextval('feeschedule_id_seq'::regclass)
+        not_null: true
+        type: integer
+    - name:
+        type: text
+    - leagueid:
+        type: integer
+    - value:
+        type: numeric(10,2)
+    foreign_keys:
+      feeschedule_leagueid_fkey:
+        columns:
+        - leagueid
+        references:
+          columns:
+          - id
+          schema: public
+          table: league
+    owner: ehochbaum
+    primary_key:
+      feeschedule_pkey:
+        columns:
+        - id
+    unique_constraints:
+      unique_leaguename:
+        columns:
+        - leagueid
+        - name
   table league:
     columns:
     - id:
@@ -29,6 +89,10 @@ schema public:
     - name:
         type: text
     owner: ehochbaum
+    unique_constraints:
+      unique_id:
+        columns:
+        - id
   table tokens:
     columns:
     - userid:
