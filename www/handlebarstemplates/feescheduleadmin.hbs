@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+			<meta charset="utf-8">
+			<meta http-equiv="X-UA-Compatible" content="IE=edge">
+			<meta name="viewport" content="width=device-width, initial-scale=1">
+			<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+			<meta name="description" content="">
+			<meta name="author" content="">
+			<link rel="icon" href="../../favicon.ico">
+
+			<title>Foo</title>
+
+			<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+			<link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css">
+
+			<script data-main="www/js/app" src="www/js/lib/require.js"></script>
+  	</head>
+
+
+        <body>
+                <h1>Fee Schedule Admin</h1>
+                <form>
+                        <div class="form-group">
+                                <label for="feeschedulename">Name</label>
+                                <input type="text" class="form-control" id="feeschedulename" placeholder="name of the fee schedule">
+                        </div>
+                        <div class="form-group">
+                                <label for="feeschedulevalue">Value</label>
+                                <input type="number" class="form-control" id="cost of the fee schedule" placeholder="$">
+                        </div>
+                        <button type="submit" class="btn btn-default">Submit</button>
+                </form>
+        </body>
+
+		  <table id="example" class="datatable display">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Name</th>
+					<th>League ID</th>
+					<th>Value</th>
+				</tr>
+			</thead>
+
+			<tbody>
+				{{#each rows}}
+				<tr>
+					<td>{{id}}</td>
+					<td>{{name}}</td>
+					<td>{{leagueid}}</td>
+					<td>{{value}}</td>
+				 </tr>
+				{{/each}}
+			</tbody>
+		  </table>
+
+</html>
+
