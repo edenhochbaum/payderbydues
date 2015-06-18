@@ -11,6 +11,15 @@ schema public:
     - all
   - PUBLIC:
     - all
+  sequence league_id_seq:
+    cache_value: 1
+    increment_by: 1
+    max_value: null
+    min_value: null
+    owner: ehochbaum
+    owner_column: id
+    owner_table: league
+    start_value: 1
   table company:
     columns:
     - id:
@@ -31,6 +40,15 @@ schema public:
       company_pkey:
         columns:
         - id
+  table league:
+    columns:
+    - id:
+        default: nextval('league_id_seq'::regclass)
+        not_null: true
+        type: integer
+    - name:
+        type: text
+    owner: ehochbaum
   table tokens:
     columns:
     - userid:
