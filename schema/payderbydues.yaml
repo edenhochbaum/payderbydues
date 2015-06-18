@@ -20,26 +20,6 @@ schema public:
     owner_column: id
     owner_table: league
     start_value: 1
-  table company:
-    columns:
-    - id:
-        not_null: true
-        type: integer
-    - name:
-        not_null: true
-        type: text
-    - age:
-        not_null: true
-        type: integer
-    - address:
-        type: character(50)
-    - salary:
-        type: real
-    owner: ehochbaum
-    primary_key:
-      company_pkey:
-        columns:
-        - id
   table league:
     columns:
     - id:
