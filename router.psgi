@@ -2,6 +2,7 @@ use Router::Simple;
 use Text::Handlebars;
 use Data::Dumper;
 use PayDerbyDues::Utilities::DBConnect;
+use Plack::Request;
 
 my $HTML_HEADERS = [ 'Content-Type' => 'text/html' ];
 my $PLAIN_HEADER = [ 'Content-Type' => 'text/plain' ];
@@ -110,6 +111,16 @@ sub _fee_schedule_admin {
 	my $TEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/feescheduleadmin.hbs');
 
 	my $dbh = PayDerbyDues::Utilities::DBConnect::GetDBH();
+
+	my $req = Plack::Request->new($env);
+	my $query_parameters = $req->query_parameters;
+
+	my $sth = $dbh->prepare('insert into feeschedule (leagueid, name, value) values (1, ?, ?)')
+		or die "failed to prepare statement: " . $dbh->errstr;
+
+	$sth->execute($query_parameters->{name}, $query_parameters->{value})
+		or die "failed to execute statement: " . $sth->errstr;
+
 	my $sqlquery = "select * from feeschedule";
 	my $sth = $dbh->prepare($sqlquery);
 	$sth->execute();

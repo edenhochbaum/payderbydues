@@ -9,7 +9,7 @@
 			<meta name="author" content="">
 			<link rel="icon" href="../../favicon.ico">
 
-			<title>Foo</title>
+			<title>Fee Schedules</title>
 
 			<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
 			<link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css">
@@ -23,15 +23,17 @@
                 <form>
                         <div class="form-group">
                                 <label for="feeschedulename">Name</label>
-                                <input type="text" class="form-control" id="feeschedulename" placeholder="name of the fee schedule">
+                                <input type="text" class="form-control" id="feeschedulename" name="name" placeholder="name of the fee schedule">
                         </div>
                         <div class="form-group">
                                 <label for="feeschedulevalue">Value</label>
-                                <input type="number" class="form-control" id="cost of the fee schedule" placeholder="$">
+                                <input type="number" class="form-control" id="costofthefeeschedule" name="value" placeholder="$">
                         </div>
-                        <button type="submit" class="btn btn-default">Submit</button>
+                        </div>
+						<div class="btn btn-default">
+                        	<button type="submit">Submit</button>
+						</div>
                 </form>
-        </body>
 
 		  <table id="example" class="datatable display">
 			<thead>
@@ -54,6 +56,6 @@
 				{{/each}}
 			</tbody>
 		  </table>
-
+        </body>
 </html>
 
