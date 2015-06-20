@@ -1,8 +1,10 @@
 use Router::Simple;
 use Text::Handlebars;
 use Data::Dumper;
-use PayDerbyDues::Utilities::DBConnect;
 use Plack::Request;
+use File::Slurp;
+
+use PayDerbyDues::Utilities::DBConnect;
 
 my $HTML_HEADERS = [ 'Content-Type' => 'text/html' ];
 my $PLAIN_HEADER = [ 'Content-Type' => 'text/plain' ];
@@ -33,14 +35,15 @@ my $app = sub {
 		}
 	}
 	else {
-		($status, $headers, $body) = (404, [], 'routing failed');
+		($status, $headers, $body) = (
+			404,
+			[],
+			Text::Handlebars->new()->render_string(
+				File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/404.hbs'),
+				{},
+			),
+		);
 	}
-
-	warn 'about to return: ' . Dumper([
-		$status,
-		$headers,
-		[$body],
-	]);
 
 	return [
 		$status,
@@ -62,8 +65,6 @@ sub _get_env {
 sub _test {
 	my ($match, $env) = @_;
 
-	require File::Slurp;
-
 	my $handlebars = Text::Handlebars->new();
 	my $TEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/test.hbs');
 
@@ -76,8 +77,6 @@ sub _test {
 
 sub _foo {
 	my ($match, $env) = @_;
-
-	require File::Slurp;
 
 	my $handlebars = Text::Handlebars->new();
 	my $TEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/foo.hbs');
@@ -104,8 +103,6 @@ sub _foo {
 
 sub _fee_schedule_admin {
 	my ($match, $env) = @_;
-
-	require File::Slurp;
 
 	my $handlebars = Text::Handlebars->new();
 	my $TEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/feescheduleadmin.hbs');
@@ -158,8 +155,6 @@ sub _hello {
 
 sub _index {
 	my ($match, $env) = @_;
-
-	require File::Slurp;
 
 	my $handlebars = Text::Handlebars->new();
 	my $TEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/index.hbs');
