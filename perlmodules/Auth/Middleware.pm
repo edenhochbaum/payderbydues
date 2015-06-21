@@ -52,9 +52,11 @@ sub check_auth
         my $res = Plack::Response->new;
         $res->redirect($config{unauthredirect});
 
+	warn "Unauthenticated user detected";
         return $res->finalize;
     }
 
+    warn "Authenticated as $username";
     local $env->{_auth_username} = $username;
     return $app->($env);
 }
@@ -66,7 +68,6 @@ sub login
     my $auth = Auth::Data->new($dbh);
     my $user = $req->parameters->{email};
     my $pass = $req->parameters->{password};
-    warn $_ for $req->parameters;
     my $token = $auth->auth($user, $pass);
     my $res = Plack::Response->new;
 
@@ -79,11 +80,8 @@ sub login
     else {
         my $redirect = _redirect_target($req, %config);
         $res->redirect($redirect);
-        $res->cookies->{s} = {
-            value => $token,
-            expires => time + $config{timeout_sec},
-            secure => 1,
-        };
+        $res->cookies->{s} = $token;
+
         return $res->finalize;
     }
 }
