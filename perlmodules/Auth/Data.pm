@@ -30,7 +30,7 @@ sub _gen_token
     die if ($len != 16);
 
     close($random);
-    return $token;
+    return join("", unpack('h*', $token));
 }
 
 sub _set_token
@@ -42,7 +42,7 @@ sub _set_token
         INSERT INTO tokens (userid, token, expires) VALUES (?, ?, now() + ?)
     }, {}, $userid, $token, "$validity");
     
-    return join("", unpack('h*', $token));
+    return $token;
 }
 
 sub _getdbrow
@@ -76,14 +76,13 @@ sub check
 {
     my ($self, $token) = @_;
 
-    my $packedtoken = pack('h*', split '', $token);
     my $usernames = $self->{dbh}->selectcol_arrayref(q{
         SELECT users.email
         FROM users, tokens
         WHERE users.id = tokens.userid
           AND token = ?
           AND expires >= now()
-        }, {}, $packedtoken);
+        }, {}, $token);
 
     return @$usernames == 1 ? $usernames->[0] : undef;
 }
