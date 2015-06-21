@@ -7,6 +7,9 @@ use Plack::Request;
 use Plack::Response;
 use Router::Simple;
 
+use PayDerbyDues::Utilities::DBConnect;
+use Auth::Data;
+
 my %defconfig = (
     unauthredirect => '/',
     timeout_sec => 30 * 60,
@@ -20,32 +23,30 @@ sub wrap
     my $router = Router::Simple->new();
     $router->connect('/login', { func => \&login }, { method => 'POST' });
     $router->connect('/newuser', { func => \&newuser }, { method => 'POST' });
-
+    
+    my $dbh = PayDerbyDues::Utilities::DBConnect::GetDBH();
+    
     return sub {
         my $env = shift;
-
-        require PathDerbyDues::Utilities::DBConnect;
-	my $dbh = PayDerbyDues::Utilities::DBConnect::GetDBH();
 
 	if (my $p = $router->match($env)) {
 	    my $req = Plack::Request->new($env);
 	    return $p->{func}->($req, $dbh, %config);
-	} elsif (!$config{authpaths} || $config{authpaths}->match($env)) {
-	    return dispatch($app, $env, $dbh, %config);
+	} elsif ($config{authpaths} && $config{authpaths}->match($env)) {
+	    return check_auth($app, $env, $dbh, %config);
         } else {
             return $app->($env);
         }
     };
 }
 
-sub dispatch
+sub check_auth
 {
     my ($app, $env, $dbh, %config) = @_;
 
     my $req = Plack::Request->new($env);
-    my $s = $req->cookies->{s};
     my $auth = Auth::Data->new($dbh);
-    my $username = $auth->check($s);
+    my $username = $auth->check($req->cookies->{s});
 
     if (!$username) {
         my $res = Plack::Response->new;
@@ -63,13 +64,14 @@ sub login
     my ($req, $dbh, %config) = @_;
 
     my $auth = Auth::Data->new($dbh);
-    my $user = $req->query_parameters->{username};
-    my $pass = $req->query_parameters->{password};
+    my $user = $req->parameters->{email};
+    my $pass = $req->parameters->{password};
+    warn $_ for $req->parameters;
     my $token = $auth->auth($user, $pass);
     my $res = Plack::Response->new;
 
     if (!$token) {
-        $res->redirect('/login?badpassword=1');
+        $res->redirect($config{unauthredirect});
         $res->cookies->{s} = '';
 
         return $res->finalize;

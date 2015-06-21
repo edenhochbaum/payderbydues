@@ -17,9 +17,7 @@ sub _clean_tokens
 {
     my ($self, $date) = @_;
 
-    $self->{dbh}->do(qq{
-        DELETE FROM tokens WHERE expires < datetime(now)
-    });
+    $self->{dbh}->do(qq{DELETE FROM tokens WHERE expires < datetime(now)});
 }
 
 sub _gen_token
@@ -37,14 +35,23 @@ sub _gen_token
 
 sub _set_token
 {
-    my ($self, $user , $validity) = @_;
+    my ($self, $userid, $validity) = @_;
 
     my $token = _gen_token();
     $self->{dbh}->do(q{
-        INSERT INTO tokens (username, token, expires) VALUES (?, ?, now() + ?))
-    }, {}, $user, $token, "$validity");
+        INSERT INTO tokens (userid, token, expires) VALUES (?, ?, now() + ?)
+    }, {}, $userid, $token, "$validity");
     
     return join("", unpack('h*', $token));
+}
+
+sub _getdbrow
+{
+    my ($dbh, $sql, @binds) = @_;
+
+    my $rows = $dbh->selectall_arrayref($sql, { Slice => {} }, @binds);
+    return unless @$rows == 1;
+    return $rows->[0];
 }
 
 sub auth
@@ -52,13 +59,13 @@ sub auth
     my ($self, $user, $pass, $validity) = @_;
     $validity //= '1 day';
 
-    my $dbpass = $self->{dbh}->selectcol_arrayref(q{SELECT password FROM users WHERE username = ?}, {}, $user);
-    if (!$dbpass || @$dbpass != 1) {
-        die "no such user!";
-    }
+    my $userrow = _getdbrow($self->{dbh},
+			    q{SELECT id, password FROM users WHERE email = ?},
+			    $user);
+    die "no such user $user" unless $userrow;
 
-    if (bcrypt->compare(text => $pass, crypt => $dbpass)) {
-        return $self->_set_token($user, $validity);
+    if (bcrypt->compare(text => $pass, crypt => $userrow->{password})) {
+        return $self->_set_token($userrow->{id}, $validity);
     }
     else {
         return 0;
@@ -70,23 +77,24 @@ sub check
     my ($self, $token) = @_;
 
     my $packedtoken = pack('h*', split '', $token);
-    my $usernames = $self->{dbh}->selectcol_arrayref(q{SELECT userid FROM tokens WHERE token = ? AND expires >= now()}, {}, $packedtoken);
-    if (@$usernames == 1) {
-        return $usernames->[0];
-    }
-    else {
-        return undef;
-    };
+    my $usernames = $self->{dbh}->selectcol_arrayref(q{
+        SELECT users.email
+        FROM users, tokens
+        WHERE users.id = tokens.userid
+          AND token = ?
+          AND expires >= now()
+        }, {}, $packedtoken);
+
+    return @$usernames == 1 ? $usernames->[0] : undef;
 }
 
 sub newuser
 {
-    my ($self, $username, $password) = @_;
+    my ($self, $email, $password) = @_;
 
     my $crypted = bcrypt->crypt(text => $password, cost => 12);
-
-    $self->{dbh}->do(qq{INSERT INTO users (username, password) VALUES (?, ?)}, {},
-		     $username, $crypted);
+    $self->{dbh}->do(qq{INSERT INTO users (email, password) VALUES (?, ?)}, {},
+                     $email, $crypted);
 }
 
 1;
