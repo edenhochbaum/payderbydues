@@ -110,13 +110,15 @@ sub _fee_schedule_admin {
 	my $dbh = PayDerbyDues::Utilities::DBConnect::GetDBH();
 
 	my $req = Plack::Request->new($env);
-	my $query_parameters = $req->query_parameters;
+	my $parameters = $req->parameters;
 
-	my $sth = $dbh->prepare('insert into feeschedule (leagueid, name, value) values (1, ?, ?)')
-		or die "failed to prepare statement: " . $dbh->errstr;
+	if ($parameters->{nextoperation} eq 'Add') {
+		my $sth = $dbh->prepare('insert into feeschedule (leagueid, name, value) values (1, ?, ?)')
+			or die "failed to prepare statement: " . $dbh->errstr;
 
-	$sth->execute($query_parameters->{name}, $query_parameters->{value})
-		or die "failed to execute statement: " . $sth->errstr;
+		$sth->execute($parameters->{name}, $parameters->{value})
+			or die "failed to execute statement: " . $sth->errstr;
+	}
 
 	my $sqlquery = "select * from feeschedule";
 	my $sth = $dbh->prepare($sqlquery);
