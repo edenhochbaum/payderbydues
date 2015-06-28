@@ -21,6 +21,11 @@ $router->connect('/hello', { method => \&_hello });
 $router->connect('/arcady', { method => \&_arcady });
 $router->connect('/test', { method => \&_test });
 
+# templates
+$router->connect('/rollout', { method => \&_rollout });
+$router->connect('/learnmore', { method => \&_learnmore });
+$router->connect('/who', { method => \&_who });
+
 my $app = sub {
 	my $env = shift;
 	my ($status, $headers, $body);
@@ -71,6 +76,45 @@ sub _test {
 
 	my $handlebars = Text::Handlebars->new();
 	my $TEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/test.hbs');
+
+	return [
+		$SUCCESS_STATUS,
+		$HTML_HEADERS,
+		$handlebars->render_string($TEMPLATE, {}),
+	];
+}
+
+sub _rollout {
+	my ($match, $env) = @_;
+
+	my $handlebars = Text::Handlebars->new();
+	my $TEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/rollout.hbs');
+
+	return [
+		$SUCCESS_STATUS,
+		$HTML_HEADERS,
+		$handlebars->render_string($TEMPLATE, {}),
+	];
+}
+
+sub _who {
+	my ($match, $env) = @_;
+
+	my $handlebars = Text::Handlebars->new();
+	my $TEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/who.hbs');
+
+	return [
+		$SUCCESS_STATUS,
+		$HTML_HEADERS,
+		$handlebars->render_string($TEMPLATE, {}),
+	];
+}
+
+sub _learnmore {
+	my ($match, $env) = @_;
+
+	my $handlebars = Text::Handlebars->new();
+	my $TEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/learnmore.hbs');
 
 	return [
 		$SUCCESS_STATUS,
