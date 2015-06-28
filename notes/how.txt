@@ -14,4 +14,7 @@ see http://www.neilconway.org/docs/sequences/
 sudo aws s3 sync s3://payderbydues s3/payderbydues --region us-west-2
 sudo aws s3 cp s3/payderbydues s3://payderbydues --recursive --region us-west-2 --acl bucket-owner-read
 
+# send aws email from command line
+aws ses send-raw-email --source "eden@payderbydues.com" --destination "eden.hochbaum@gmail.com" --raw-message "hello world"
+
 
