@@ -9,3 +9,9 @@ psql --host=foxtrot.cdcnwhesdbho.us-west-2.rds.amazonaws.com --username=ehochbau
 
 # using sequences in PostgreSQL
 see http://www.neilconway.org/docs/sequences/
+
+# sync s3 bucket to local, and local to bucket 
+sudo aws s3 sync s3://payderbydues s3/payderbydues --region us-west-2
+sudo aws s3 cp s3/payderbydues s3://payderbydues --recursive --region us-west-2 --acl bucket-owner-read
+
+
