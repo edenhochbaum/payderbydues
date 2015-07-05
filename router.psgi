@@ -14,17 +14,16 @@ my $SUCCESS_STATUS = 200;
 my $router = Router::Simple->new();
 
 $router->connect('/', { method => \&_index });
-#$router->connect('/getenv', { method => \&_get_env });
-$router->connect('/foo', { method => \&_foo });
-$router->connect('/feescheduleadmin', { method => \&_fee_schedule_admin });
-$router->connect('/hello', { method => \&_hello });
 $router->connect('/arcady', { method => \&_arcady });
-$router->connect('/test', { method => \&_test });
+
+## $router->connect('/getenv', { method => \&_get_env });
+
 
 # templates
 $router->connect('/rollout', { method => \&_rollout });
-$router->connect('/learnmore', { method => \&_learnmore });
 $router->connect('/who', { method => \&_who });
+$router->connect('/learnmore', { method => \&_learnmore });
+$router->connect('/feescheduleadmin', { method => \&_fee_schedule_admin });
 
 my $app = sub {
 	my $env = shift;
@@ -57,10 +56,12 @@ my $app = sub {
 		[$body],
 	];
 };
+
 my $authroutes = Router::Simple->new();
 $authroutes->connect('/getenv', {});
 Auth::Middleware::wrap($app, authpaths => $authroutes);
 
+# note, we've de-activated routing to this!
 sub _get_env {
 	my ($match, $env) = @_;
 
@@ -71,29 +72,24 @@ sub _get_env {
 	];
 }
 
-sub _test {
-	my ($match, $env) = @_;
-
-	my $handlebars = Text::Handlebars->new();
-	my $TEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/test.hbs');
-
-	return [
-		$SUCCESS_STATUS,
-		$HTML_HEADERS,
-		$handlebars->render_string($TEMPLATE, {}),
-	];
-}
-
 sub _rollout {
 	my ($match, $env) = @_;
 
 	my $handlebars = Text::Handlebars->new();
-	my $TEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/rollout.hbs');
+
+	my $LAYOUT = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/layout.hbs');
+
+	my $CONTENT = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/rollout.hbs');
+	my $container_contents = $handlebars->render_string($CONTENT, {});
 
 	return [
 		$SUCCESS_STATUS,
 		$HTML_HEADERS,
-		$handlebars->render_string($TEMPLATE, {}),
+		$handlebars->render_string($LAYOUT, {
+			title => 'rollout',
+			rollout => 1,
+			container => $container_contents,
+		}),
 	];
 }
 
@@ -101,12 +97,20 @@ sub _who {
 	my ($match, $env) = @_;
 
 	my $handlebars = Text::Handlebars->new();
-	my $TEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/who.hbs');
+
+	my $LAYOUT = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/layout.hbs');
+
+	my $CONTENT = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/who.hbs');
+	my $container_contents = $handlebars->render_string($CONTENT, {});
 
 	return [
 		$SUCCESS_STATUS,
 		$HTML_HEADERS,
-		$handlebars->render_string($TEMPLATE, {}),
+		$handlebars->render_string($LAYOUT, {
+			title => 'who',
+			who => 1,
+			container => $container_contents,
+		}),
 	];
 }
 
@@ -114,38 +118,19 @@ sub _learnmore {
 	my ($match, $env) = @_;
 
 	my $handlebars = Text::Handlebars->new();
-	my $TEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/learnmore.hbs');
+	my $LAYOUT = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/layout.hbs');
+
+	my $CONTENT = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/learnmore.hbs');
+	my $container_contents = $handlebars->render_string($CONTENT, {});
 
 	return [
 		$SUCCESS_STATUS,
 		$HTML_HEADERS,
-		$handlebars->render_string($TEMPLATE, {}),
-	];
-}
-
-sub _foo {
-	my ($match, $env) = @_;
-
-	my $handlebars = Text::Handlebars->new();
-	my $TEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/foo.hbs');
-
-	my $dbh = PayDerbyDues::Utilities::DBConnect::GetDBH();
-	my $sqlquery = "select * from company";
-	my $sth = $dbh->prepare($sqlquery);
-	$sth->execute();
-
-	my $data = $sth->fetchall_arrayref; # array ref of array refs
-
-	@$data = map {;+{bar => join(', ', @$_)}} @$data;
-
-	my $vars = {
-		rows => $data,
-	};
-
-	return [
-		$SUCCESS_STATUS,
-		$HTML_HEADERS,
-		$handlebars->render_string($TEMPLATE, $vars),
+		$handlebars->render_string($LAYOUT, {
+			title => 'learnmore',
+			learnmore => 1,
+			container => $container_contents,
+		}),
 	];
 }
 
@@ -153,6 +138,7 @@ sub _fee_schedule_admin {
 	my ($match, $env) = @_;
 
 	my $handlebars = Text::Handlebars->new();
+
 	my $TEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/feescheduleadmin.hbs');
 
 	my $dbh = PayDerbyDues::Utilities::DBConnect::GetDBH();
@@ -184,22 +170,18 @@ sub _fee_schedule_admin {
 		rows => $data,
 	};
 
-	return [
-		$SUCCESS_STATUS,
-		$HTML_HEADERS,
-		$handlebars->render_string($TEMPLATE, $vars),
-	];
-}
+	my $container_contents = $handlebars->render_string($TEMPLATE, $vars);
 
-
-
-sub _hello {
-	my ($match, $env) = @_;
+	my $LAYOUT = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/layout.hbs');
 
 	return [
 		$SUCCESS_STATUS,
 		$HTML_HEADERS,
-		'in hello with match and environment: ' . Dumper([$match, $env]),
+		$handlebars->render_string($LAYOUT, {
+			title => 'fee schedule admin',
+			feescheduleadmin => 1,
+			container => $container_contents,
+		}),
 	];
 }
 
