@@ -1,4 +1,4 @@
-package Auth::Data;
+package PayDerbyDues::Auth::Data;
 
 use strict;
 use warnings;

@@ -4,7 +4,7 @@ use Data::Dumper;
 use Plack::Request;
 use File::Slurp;
 
-use Auth::Middleware;
+use PayDerbyDues::Auth::Middleware;
 use PayDerbyDues::Utilities::DBConnect;
 
 my $HTML_HEADERS = [ 'Content-Type' => 'text/html' ];
@@ -59,7 +59,7 @@ my $app = sub {
 
 my $authroutes = Router::Simple->new();
 $authroutes->connect('/getenv', {});
-Auth::Middleware::wrap($app, authpaths => $authroutes);
+PayDerbyDues::Auth::Middleware::wrap($app, authpaths => $authroutes);
 
 # note, we've de-activated routing to this!
 sub _get_env {

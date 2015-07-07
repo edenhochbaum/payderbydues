@@ -1,4 +1,4 @@
-package Auth::Middleware;
+package PayDerbyDues::Auth::Middleware;
 
 use strict;
 use warnings;
@@ -7,8 +7,8 @@ use Plack::Request;
 use Plack::Response;
 use Router::Simple;
 
+use PayDerbyDues::Auth::Data;
 use PayDerbyDues::Utilities::DBConnect;
-use Auth::Data;
 
 my %defconfig = (
     unauthredirect => '/',
@@ -45,7 +45,7 @@ sub check_auth
     my ($app, $env, $dbh, %config) = @_;
 
     my $req = Plack::Request->new($env);
-    my $auth = Auth::Data->new($dbh);
+    my $auth = PayDerbyDues::Auth::Data->new($dbh);
     my $username = $auth->check($req->cookies->{s});
 
     if (!$username) {
@@ -65,7 +65,7 @@ sub login
 {
     my ($req, $dbh, %config) = @_;
 
-    my $auth = Auth::Data->new($dbh);
+    my $auth = PayDerbyDues::Auth::Data->new($dbh);
     my $user = $req->parameters->{email};
     my $pass = $req->parameters->{password};
     my $token = $auth->auth($user, $pass);
@@ -97,7 +97,7 @@ sub newuser
     my ($req, $dbh, %config) = @_;
 
     if ($req->method eq 'POST') {
-        my $auth = Auth::Data->new($dbh);
+        my $auth = PayDerbyDues::Auth::Data->new($dbh);
         my $params = $req->body_parameters();
         my $status = $auth->newuser($params->{username}, $params->{password});
         my $res = Plack::Response->new;
