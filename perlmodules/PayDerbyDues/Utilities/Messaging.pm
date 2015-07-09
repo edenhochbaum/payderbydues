@@ -4,6 +4,8 @@ use strict;
 use warnings;
 
 use Carp::Assert ();
+use Mail::RFC822::Address ();
+use Text::Handlebars;
 
 use Paws;
 use Paws::SES::Destination;
@@ -15,7 +17,7 @@ sub SendWelcomeEmail {
 	my ($args) = @_;
 	my ($toaddress, $toname, $toleague) = @{$args}{qw(TOADDRESS TONAME TOLEAGUE)};
 
-	Carp::Assert::assert($toaddress);
+	Carp::Assert::assert(Mail::RFC822::Address::valid($toaddress));
 
 	my $subject = _WelcomeSubject();
 	my $body = _WelcomeBody($args);
@@ -26,7 +28,7 @@ sub SendWelcomeEmail {
 	# FIXME: should log message id to db
 	return $ses->SendEmail(
 		Destination => Paws::SES::Destination->new(
-			ToAddresses => [q/eden.hochbaum@gmail.com/],
+			ToAddresses => [$toaddress],
 		),
 		Message => Paws::SES::Message->new(
 			Body => Paws::SES::Body->new(
@@ -52,9 +54,18 @@ sub _WelcomeBody {
 
 	require Data::Dumper;
 
-	# FIXME: implement this as handlebars template, with real copy
-	return sprintf('hello world welcome body to args: %s', Data::Dumper::Dumper($args));
-}
+	my $WELCOMETEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/emails/welcome.hbs');
 
+	Carp::Assert::assert($WELCOMETEMPLATE);
+
+	my $handlebars = Text::Handlebars->new();
+
+	# FIXME: implement this as handlebars template, with real copy
+	return $handlebars->render_string($WELCOMETEMPLATE, {
+		name => $args->{TONAME},
+		league => $args->{TOLEAGUE},
+		invitedby => 'Eden Hochbaum',
+	});
+}
 
 1;

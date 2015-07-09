@@ -24,6 +24,7 @@ $router->connect('/rollout', { method => \&_rollout });
 $router->connect('/who', { method => \&_who });
 $router->connect('/learnmore', { method => \&_learnmore });
 $router->connect('/feescheduleadmin', { method => \&_fee_schedule_admin });
+$router->connect('/emailed', { method => \&_email_ed });
 
 my $app = sub {
 	my $env = shift;
@@ -69,6 +70,27 @@ sub _get_env {
 		200,
 		$HTML_HEADERS,
 		Dumper(\%ENV),
+	];
+}
+
+sub _email_ed {
+	my ($match, $env) = @_;
+
+	my $args = +{
+		TOADDRESS => q/eden.hochbaum@gmail.com/,
+		TONAME => q/eden/,
+		TOLEAGUE => q/Bar League/,
+	};
+
+	require PayDerbyDues::Utilities::Messaging;
+	my $r = PayDerbyDues::Utilities::Messaging::SendWelcomeEmail($args);
+
+	require Data::Dumper;
+
+	return [
+		$SUCCESS_STATUS,
+		$HTML_HEADERS,
+		Data::Dumper::Dumper($r),
 	];
 }
 
