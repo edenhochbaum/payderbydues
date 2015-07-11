@@ -8,18 +8,21 @@ use Crypt::Bcrypt::Easy;
 sub new
 {
     my ($class, $dbh) = @_;
+
     bless {
         dbh => $dbh,
     }, $class;
 }
 
+# just deletes all tokens that have expired
 sub _clean_tokens
 {
-    my ($self, $date) = @_;
+    my ($self) = @_;
 
     $self->{dbh}->do(qq{DELETE FROM tokens WHERE expires < datetime(now)});
 }
 
+# token is just 16 bytes streamed from /dev/urandom returned in hex (so 32 hex digits)
 sub _gen_token
 {
     open(my $random, '<', "/dev/urandom") or die "No entropy source!";
@@ -33,6 +36,11 @@ sub _gen_token
     return join("", unpack('h*', $token));
 }
 
+# generates a token
+# adds token to tokens table for $userid, setting expiration for postgres system now() + $validity
+# returns the generated token
+#
+# see: http://www.postgresql.org/docs/8.0/static/functions-datetime.html
 sub _set_token
 {
     my ($self, $userid, $validity) = @_;
@@ -54,6 +62,11 @@ sub _getdbrow
     return $rows->[0];
 }
 
+# takes a $user email address, a $pass, and [optional] $validity interval
+# throws exception on unrecognized $user
+# compares crypto hash of $pass to stored crypto hash of true password
+# 	if failed match, returns 0
+# 	if match, generates a new token for the user, and returns it
 sub auth
 {
     my ($self, $user, $pass, $validity) = @_;
@@ -72,6 +85,8 @@ sub auth
     }
 }
 
+# returns user (email address) corresponding to valid token
+# returns undef if token not recognized, or token expired
 sub check
 {
     my ($self, $token) = @_;
@@ -87,6 +102,7 @@ sub check
     return @$usernames == 1 ? $usernames->[0] : undef;
 }
 
+# adds a new user to users table
 sub newuser
 {
     my ($self, $email, $password) = @_;
