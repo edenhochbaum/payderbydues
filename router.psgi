@@ -25,6 +25,7 @@ $router->connect('/who', { method => \&_who });
 $router->connect('/learnmore', { method => \&_learnmore });
 $router->connect('/feescheduleadmin', { method => \&_fee_schedule_admin });
 $router->connect('/emailed', { method => \&_email_ed });
+$router->connect('/login', { method => \&_login });
 
 my $app = sub {
 	my $env = shift;
