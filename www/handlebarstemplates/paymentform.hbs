@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+<script type="text/javascript" src="https://js.stripe.com/v2/"></script>
+<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.3.js"></script>
+<script>
+Stripe.setPublishableKey('{{publishable_key}}');
+ojQuery(function($) {
+  var pay = function(event) {
+    var form = $('#payment');
+    form.find('button').prop('disabled', true);
+    var token = Stripe.card.createToken(form, function (status, response) {
+      console.log(response);
+      if (response.error) {
+         form.find('.payment-errors').text(response.error.message);
+         form.find('button').prop('disabled', false);
+      } else {
+         var token = response.id;
+         console.log(token);
+         form.append('<input type="hidden" name="stripeToken">')
+         $('#payment input[name=stripeToken]').val(token);
+         form.get(0).submit();
+      }
+    });
+    return false;
+  }
+  $('#payment').submit(pay);
+});
+</script>
+<style>
+div.paid {
+  border-style: solid;
+  border-color: green
+  background-color: #eeffee;
+  color: #44aa44;
+  font-size: 1.5em;
+}
+</style>
+</head>
+<body>
+{{! TODO: league logo  }}
+<h1>{{leaguename}}</h1>
+<h2>{{username}}</h2>
+<p>
+  You owe: {{amountowed}}
+</p>
+{{#if paid}}
+  <div class="paid">
+    Thank you for paying! Your payment of {{paid}} has been credited to your account.
+  </div>
+{{/if}}
+<form id="payment" action="" method="POST">
+  <span class="payment-errors"></span>
+  <div class="form-row">
+    <label>
+      <span>Credit Card Number:</span>
+      <input type="text" size="20" data-stripe="number">
+    </label>
+  </div>
+  <div class="form-row">
+    <label>
+      <span>CVV code:</span>
+      <input type="text" size="3" data-stripe="cvc">
+    </label>
+  </div>
+  <div class="form-row">
+    <label>
+      <span>Expiration Date:</span>
+      <input type="text" size="3" data-stripe="exp-month">
+      <input type="text" size="3" data-stripe="exp-year">
+    </label>
+  </div>
+  <button type="submit">Pay!</button>
+  <input type="hidden" value="{{acctinfo.name}}" data-stripe="name">
+</form>
+</body>
+</html>
