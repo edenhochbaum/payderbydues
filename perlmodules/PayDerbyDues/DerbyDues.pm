@@ -1,33 +1,24 @@
 package PayDerbyDues::DerbyDues;
 
-use v5.20;
-use feature 'signatures';
 use strict;
 use warnings;
-no warnings 'experimental::signatures';
 
-use DBI;
-use File::Slurp::Tiny;
-use Plack::Request;
 use Net::Stripe;
-use View;
+use Plack::Request;
 
-sub htmlhash($hash) {
-    my $ret = '<dl>';
-    for my $key (sort keys %$hash) {
-	$ret .= "<dt>$key</dt><dd>$hash->{$key}</dd>\n"
+#use View;
 
-    }
-    return $ret . "</dl>\n";
-}
-
-sub table_hash($dbh, $sql, @binds)
+sub table_hash
 {
+    my ($dbh, $sql, @binds) = @_;
+
     $dbh->selectall_arrayref($sql, { Slice => {} }, @binds);
 }
 
-sub get_member($dbh, $username, $leaguename = undef)
+sub get_member
 {
+    my ($dbh, $username, $leaguename) = @_;
+
     return @{table_hash($dbh, q{
         select member.username, member.id, member.id, member.realname, member.derbyname,
                member.dob, member.active, leaguemember.memberclassid, leaguemember.adminlevel, league.name leaguename
@@ -36,18 +27,10 @@ sub get_member($dbh, $username, $leaguename = undef)
               leaguemember.leagueid = league.id}, $username) || [] }[0];
 }
 
-sub get_ledger($dbh, $username)
+sub home
 {
+    my ($dbh, $req) = @_;
 
-}
-
-sub get_league_summary($dbh, $leagueid)
-{
-    #($dbh, 'select -sum(amount), memberid from ledger where leagueid = ? group by memberid')->[0];
-}
-
-sub home($dbh, $req)
-{
     my $paid = 0;
     if ($req->method eq 'POST') {
         my $postparams = $req->body_parameters();
@@ -68,13 +51,11 @@ sub home($dbh, $req)
     my $memberrec = get_member($dbh, $username);
     # TODO: amount owed
 
-    my $ledger = get_ledger($dbh, $username);
-    
     if ($memberrec->{adminlevel}) {
         # TODO: link to league summary
     }
     return View::render('views/paymentform.hbs', {
-        publishable_key => 'pk_test_oLIm1R9BjDo6ymTGBemqbK1A',
+        publishable_key => 'pk_test_oLIm1R9BjDo6ymTGBemqbK1',
         leaguename => $memberrec->{leaguename},
         username => $memberrec->{derbyname},
         amountowed => '$42.00',
@@ -84,46 +65,5 @@ sub home($dbh, $req)
         }
     });
 }
-
-my %routes = (
-    '/' => \&home,
-    '/home' => \&home,
-    );
-
-
-sub dbconnect
-{
-    my $filename = 'data.db';
-    my $needtocreateschema;
-    if (!-e $filename) {
-        $needtocreateschema = 1;
-    }
-
-    my $dbh = DBI->connect("dbi:SQLite:$filename");
-    if ($needtocreateschema) {
-        my $schema = File::Slurp::Tiny::read_file('schema.sql');
-        eval {
-            $dbh->do($schema);
-        };
-        if ($@) {
-            unlink $filename;
-            die "Could not create schema: $@";
-        }
-    }
-    return $dbh;
-
-}
-
-sub request($env)
-{
-    my $req = Plack::Request->new($env);
-
-    my $dbh = dbconnect();
-    my $route = $routes{$req->path};
-    die [404, "bad route"] unless $route;
-
-    return $route->($dbh, $req);
-}
-
 
 1;
