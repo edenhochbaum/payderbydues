@@ -88,6 +88,12 @@ schema public:
         type: integer
     - name:
         type: text
+    - stripe_account:
+        type: character varying(40)
+    - stripe_publickey:
+        type: character varying(40)
+    - stripe_secretkey:
+        type: character varying(40)
     owner: ehochbaum
     unique_constraints:
       unique_id:
