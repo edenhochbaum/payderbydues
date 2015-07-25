@@ -29,6 +29,13 @@ schema public:
     owner_column: id
     owner_table: league
     start_value: 1
+  sequence member_id_seq:
+    cache_value: 1
+    increment_by: 1
+    max_value: null
+    min_value: null
+    owner: ehochbaum
+    start_value: 1
   table company:
     columns:
     - id:
@@ -97,6 +104,61 @@ schema public:
     owner: ehochbaum
     unique_constraints:
       unique_id:
+        columns:
+        - id
+  table leaguemember:
+    columns:
+    - leagueid:
+        not_null: true
+        type: integer
+    - memberid:
+        not_null: true
+        type: integer
+    - stripe_customerid:
+        type: character varying(40)
+    foreign_keys:
+      leaguemember_leagueid_fkey:
+        columns:
+        - leagueid
+        references:
+          columns:
+          - id
+          schema: public
+          table: league
+      leaguemember_memberid_fkey:
+        columns:
+        - memberid
+        references:
+          columns:
+          - id
+          schema: public
+          table: member
+    owner: ehochbaum
+  table member:
+    columns:
+    - id:
+        default: nextval('member_id_seq'::regclass)
+        not_null: true
+        type: integer
+    - legalname:
+        type: character varying(100)
+    - derbyname:
+        type: character varying(100)
+    - userid:
+        not_null: true
+        type: integer
+    foreign_keys:
+      member_userid_fkey:
+        columns:
+        - userid
+        references:
+          columns:
+          - id
+          schema: public
+          table: users
+    owner: ehochbaum
+    primary_key:
+      member_pkey:
         columns:
         - id
   table tokens:
