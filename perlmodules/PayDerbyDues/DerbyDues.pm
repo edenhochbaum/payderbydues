@@ -6,7 +6,8 @@ use warnings;
 use Net::Stripe;
 use Plack::Request;
 
-#use View;
+use PayDerbyDues::Utilities::DBConnect;
+use PayDerbyDues::View;
 
 sub table_hash
 {
@@ -17,14 +18,15 @@ sub table_hash
 
 sub get_member
 {
-    my ($dbh, $username, $leaguename) = @_;
+    my ($dbh, $userid, $leaguename) = @_;
 
     return @{table_hash($dbh, q{
-        select member.username, member.id, member.id, member.realname, member.derbyname,
-               member.dob, member.active, leaguemember.memberclassid, leaguemember.adminlevel, league.name leaguename
+        select member.legalname,
+               member.derbyname,
+               league.name leaguename
         from member, leaguemember, league
-        where member.id = leaguemember.memberid and member.username = ? and
-              leaguemember.leagueid = league.id}, $username) || [] }[0];
+        where member.id = leaguemember.memberid and member.userid = ? and
+              leaguemember.leagueid = league.id}, $userid) || [] }[0];
 }
 
 sub home
@@ -34,8 +36,11 @@ sub home
     my $paid = 0;
     if ($req->method eq 'POST') {
         my $postparams = $req->body_parameters();
-        my $stripe = Net::Stripe->new(api_key => $ENV{STRIPE_SECRET_KEY});
+        my $stripe = Net::Stripe->new(api_key => $ENV{STRIPE_TEST_KEY});
         my $token = $postparams->{stripeToken};
+	warn "token: $token";
+	use Data::Dumper;
+	warn Dumper($postparams);
         my $charge = $stripe->post_charge(
             amount => 4200,
             currency => 'USD', # TODO: fetch from league
@@ -47,14 +52,17 @@ sub home
             $paid = '$42.00';
         }
     }
-    my $username = 'bob@rodney.com';#$req->env->{_auth_username};
-    my $memberrec = get_member($dbh, $username);
+    my $userid = 3;#'bob@rodney.com';#$req->env->{_auth_username};
+    my $memberrec = get_member($dbh, $userid);
     # TODO: amount owed
 
     if ($memberrec->{adminlevel}) {
         # TODO: link to league summary
     }
-    return View::render('views/paymentform.hbs', {
+
+    my $handlebars = Text::Handlebars->new();
+
+    return PayDerbyDues::View::render('paymentform.hbs', {
         publishable_key => 'pk_test_oLIm1R9BjDo6ymTGBemqbK1',
         leaguename => $memberrec->{leaguename},
         username => $memberrec->{derbyname},
@@ -64,6 +72,16 @@ sub home
             name => $memberrec->{realname}
         }
     });
+}
+
+sub request
+{
+    my $env = shift;
+    my $dbh = PayDerbyDues::Utilities::DBConnect::GetDBH();
+    my $request = Plack::Request->new($env);
+
+    return home($dbh, $request);
+
 }
 
 1;
