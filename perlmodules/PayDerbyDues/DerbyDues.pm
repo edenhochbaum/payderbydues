@@ -38,9 +38,7 @@ sub home
         my $postparams = $req->body_parameters();
         my $stripe = Net::Stripe->new(api_key => $ENV{STRIPE_TEST_KEY});
         my $token = $postparams->{stripeToken};
-	warn "token: $token";
-	use Data::Dumper;
-	warn Dumper($postparams);
+
         my $charge = $stripe->post_charge(
             amount => 4200,
             currency => 'USD', # TODO: fetch from league
@@ -63,7 +61,7 @@ sub home
     my $handlebars = Text::Handlebars->new();
 
     return PayDerbyDues::View::render('paymentform.hbs', {
-        publishable_key => 'pk_test_oLIm1R9BjDo6ymTGBemqbK1',
+        publishable_key => $ENV{STRIPE_TEST_PUBKEY},
         leaguename => $memberrec->{leaguename},
         username => $memberrec->{derbyname},
         amountowed => '$42.00',
