@@ -46,9 +46,9 @@ sub check_auth
 
     my $req = Plack::Request->new($env);
     my $auth = PayDerbyDues::Auth::Data->new($dbh);
-    my $username = $auth->check($req->cookies->{s});
+    my $userid = $auth->check($req->cookies->{s});
 
-    if (!$username) {
+    if (!$userid) {
         my $res = Plack::Response->new;
         $res->redirect($config{unauthredirect});
 
@@ -56,8 +56,8 @@ sub check_auth
         return $res->finalize;
     }
 
-    warn "Authenticated as $username";
-    local $env->{_auth_username} = $username;
+    warn "Authenticated as $userid";
+    local $env->{_auth_userid} = $userid;
     return $app->($env);
 }
 

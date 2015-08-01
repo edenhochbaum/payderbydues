@@ -91,15 +91,15 @@ sub check
 {
     my ($self, $token) = @_;
 
-    my $usernames = $self->{dbh}->selectcol_arrayref(q{
-        SELECT users.email
+    my $userids = $self->{dbh}->selectcol_arrayref(q{
+        SELECT users.id
         FROM users, tokens
         WHERE users.id = tokens.userid
           AND token = ?
           AND expires >= now()
         }, {}, $token);
 
-    return @$usernames == 1 ? $usernames->[0] : undef;
+    return @$userids == 1 ? $userids->[0] : undef;
 }
 
 # adds a new user to users table
