@@ -60,6 +60,7 @@ my $app = sub {
 
 my $authroutes = Router::Simple->new();
 $authroutes->connect('/getenv', {});
+$authroutes->connect('/arcady', {});
 PayDerbyDues::Auth::Middleware::wrap($app, authpaths => $authroutes);
 
 # note, we've de-activated routing to this!

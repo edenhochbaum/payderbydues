@@ -50,7 +50,10 @@ sub home
             $paid = '$42.00';
         }
     }
-    my $userid = 3;#'bob@rodney.com';#$req->env->{_auth_username};
+    my $userid = $req->env->{_auth_userid};
+    if (!defined($userid)) {
+	die "You must be logged in!";
+    }
     my $memberrec = get_member($dbh, $userid);
     # TODO: amount owed
 
