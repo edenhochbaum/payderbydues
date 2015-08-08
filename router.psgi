@@ -1,3 +1,6 @@
+use strict;
+use warnings;
+
 use Router::Simple;
 use Text::Handlebars;
 use Data::Dumper;
@@ -6,18 +9,15 @@ use File::Slurp;
 
 use PayDerbyDues::Auth::Middleware;
 use PayDerbyDues::Utilities::DBConnect;
-
-my $HTML_HEADERS = [ 'Content-Type' => 'text/html' ];
-my $PLAIN_HEADER = [ 'Content-Type' => 'text/plain' ];
-my $SUCCESS_STATUS = 200;
+use PayDerbyDues::DerbyDues;
+use PayDerbyDues::RequestGlobalData;
+use PayDerbyDues::Constants;
+use PayDerbyDues::WorkFlows::All;
 
 my $router = Router::Simple->new();
 
 $router->connect('/', { method => \&_index });
 $router->connect('/arcady', { method => \&_arcady });
-
-## $router->connect('/getenv', { method => \&_get_env });
-
 
 # templates
 $router->connect('/rollout', { method => \&_rollout });
@@ -28,33 +28,36 @@ $router->connect('/emailed', { method => \&_email_ed });
 
 my $app = sub {
 	my $env = shift;
-	my ($status, $headers, $body);
 
 	if (my $match = $router->match($env)) {
-		eval {
-			($status, $headers, $body) = @{ $match->{method}->($match, $env) };
+		my $rv = eval {
+			return [
+				$PayDerbyDues::Constants::HTTP_SUCCESS_STATUS,
+				$PayDerbyDues::Constants::HTML_CONTENT_TYPE_HEADER,
+				[ $match->{method}->($match, $env) ],
+			];
 		};
+
 		if ($@) {
-			$status = 500;
-			$headers = [ 'Content-Type' => 'text/plain' ];
-			$body = "ERROR!!! $@";
+			return [
+				$PayDerbyDues::Constants::HTTP_INTERNAL_ERROR_STATUS,
+				$PayDerbyDues::Constants::PLAIN_CONTENT_TYPE_HEADER,
+				["ERROR!!! $@"],
+			];
 		}
+
+		return $rv;
 	}
-	else {
-		($status, $headers, $body) = (
-			404,
-			[],
+
+	return [
+		$PayDerbyDues::Constants::HTTP_NOT_FOUND_STATUS,
+		$PayDerbyDues::Constants::HTML_CONTENT_TYPE_HEADER,
+		[
 			Text::Handlebars->new()->render_string(
 				File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/404.hbs'),
 				{},
 			),
-		);
-	}
-
-	return [
-		$status,
-		$headers,
-		[$body],
+		]
 	];
 };
 
@@ -62,17 +65,6 @@ my $authroutes = Router::Simple->new();
 $authroutes->connect('/getenv', {});
 $authroutes->connect('/arcady', {});
 PayDerbyDues::Auth::Middleware::wrap($app, authpaths => $authroutes);
-
-# note, we've de-activated routing to this!
-sub _get_env {
-	my ($match, $env) = @_;
-
-	return [
-		200,
-		$HTML_HEADERS,
-		Dumper(\%ENV),
-	];
-}
 
 sub _email_ed {
 	my ($match, $env) = @_;
@@ -88,11 +80,7 @@ sub _email_ed {
 
 	require Data::Dumper;
 
-	return [
-		$SUCCESS_STATUS,
-		$HTML_HEADERS,
-		Data::Dumper::Dumper($r),
-	];
+	Data::Dumper::Dumper($r),
 }
 
 sub _rollout {
@@ -105,15 +93,11 @@ sub _rollout {
 	my $CONTENT = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/rollout.hbs');
 	my $container_contents = $handlebars->render_string($CONTENT, {});
 
-	return [
-		$SUCCESS_STATUS,
-		$HTML_HEADERS,
-		$handlebars->render_string($LAYOUT, {
+	return $handlebars->render_string($LAYOUT, {
 			title => 'rollout',
 			rollout => 1,
 			container => $container_contents,
-		}),
-	];
+	}),
 }
 
 sub _who {
@@ -126,15 +110,11 @@ sub _who {
 	my $CONTENT = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/who.hbs');
 	my $container_contents = $handlebars->render_string($CONTENT, {});
 
-	return [
-		$SUCCESS_STATUS,
-		$HTML_HEADERS,
-		$handlebars->render_string($LAYOUT, {
-			title => 'who',
-			who => 1,
-			container => $container_contents,
-		}),
-	];
+	return $handlebars->render_string($LAYOUT, {
+		title => 'who',
+		who => 1,
+		container => $container_contents,
+	});
 }
 
 sub _learnmore {
@@ -146,15 +126,11 @@ sub _learnmore {
 	my $CONTENT = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/learnmore.hbs');
 	my $container_contents = $handlebars->render_string($CONTENT, {});
 
-	return [
-		$SUCCESS_STATUS,
-		$HTML_HEADERS,
-		$handlebars->render_string($LAYOUT, {
-			title => 'learnmore',
-			learnmore => 1,
-			container => $container_contents,
-		}),
-	];
+	return $handlebars->render_string($LAYOUT, {
+		title => 'learnmore',
+		learnmore => 1,
+		container => $container_contents,
+	});
 }
 
 sub _fee_schedule_admin {
@@ -197,15 +173,11 @@ sub _fee_schedule_admin {
 
 	my $LAYOUT = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/layout.hbs');
 
-	return [
-		$SUCCESS_STATUS,
-		$HTML_HEADERS,
-		$handlebars->render_string($LAYOUT, {
-			title => 'fee schedule admin',
-			feescheduleadmin => 1,
-			container => $container_contents,
-		}),
-	];
+	return $handlebars->render_string($LAYOUT, {
+		title => 'fee schedule admin',
+		feescheduleadmin => 1,
+		container => $container_contents,
+	});
 }
 
 sub _index {
@@ -214,28 +186,11 @@ sub _index {
 	my $handlebars = Text::Handlebars->new();
 	my $TEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/index.hbs');
 
-	return [
-		$SUCCESS_STATUS,
-		$HTML_HEADERS,
-		$handlebars->render_string($TEMPLATE, {}),
-	];
+	return $handlebars->render_string($TEMPLATE, {}),
 }
 
 sub _arcady {
 	my ($match, $env) = @_;
 
-	require PayDerbyDues::DerbyDues;
-
-	$headers = [ 'Content-Type' => 'text/html'];
-
-	eval {
-		$body = PayDerbyDues::DerbyDues::request($env);
-		$status = 200;
-	};
-	if ($@) {
-		$status = 500;
-		$body = "ERROR!!! $@";
-	}
-
-	return [ $status, $headers, $body ];
+	return PayDerbyDues::DerbyDues::request($env);
 }
