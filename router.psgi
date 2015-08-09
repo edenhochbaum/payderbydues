@@ -1,6 +1,8 @@
 use strict;
 use warnings;
 
+use Plack::Builder;
+
 use Router::Simple;
 use Text::Handlebars;
 use File::Slurp;
@@ -11,29 +13,27 @@ use PayDerbyDues::DerbyDues;
 use PayDerbyDues::RequestGlobalData;
 use PayDerbyDues::Constants;
 use PayDerbyDues::WorkFlows::All;
+use PayDerbyDues::GlobalRouter;
 
-my $router = Router::Simple->new();
-
-$router->connect('/', { themethod => \&PayDerbyDues::WorkFlows::All::index });
-$router->connect('/arcady', { themethod => \&_arcady });
-$router->connect('/rollout', { themethod => \&PayDerbyDues::WorkFlows::All::rollout });
-$router->connect('/who', { themethod => \&PayDerbyDues::WorkFlows::All::who });
-$router->connect('/learnmore', { themethod => \&PayDerbyDues::WorkFlows::All::learnmore });
-$router->connect('/feescheduleadmin', { themethod => \&PayDerbyDues::WorkFlows::All::fee_schedule_admin });
-$router->connect('/emailed', { themethod => \&PayDerbyDues::WorkFlows::All::email_ed });
+# constant
+my $router = PayDerbyDues::GlobalRouter::_GetGlobalRouter();
 
 my $app = sub {
 	my $env = shift;
 
-	$PayDerbyDues::RequestGlobalData::dbh = PayDerbyDues::Utilities::DBConnect::GetDBH();
-
 	if (my $match = $router->match($env)) {
 		my $rv = eval {
-			return [
-				$PayDerbyDues::Constants::HTTP_SUCCESS_STATUS,
-				$PayDerbyDues::Constants::HTML_CONTENT_TYPE_HEADER,
-				[ $match->{themethod}->($match, $env) ],
-			];
+			if($match->{dont_finalize}) {
+				$match->{func}->($match, $env);
+
+			}
+			else {
+				[
+					$PayDerbyDues::Constants::HTTP_SUCCESS_STATUS,
+					$PayDerbyDues::Constants::HTML_CONTENT_TYPE_HEADER,
+					[ $match->{func}->($match, $env) ],
+				];
+			}
 		};
 
 		if ($@) {
@@ -47,24 +47,34 @@ my $app = sub {
 		return $rv;
 	}
 
-	return [
-		$PayDerbyDues::Constants::HTTP_NOT_FOUND_STATUS,
-		$PayDerbyDues::Constants::HTML_CONTENT_TYPE_HEADER,
-		[
-			Text::Handlebars->new()->render_string(
-				File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/404.hbs'),
-				{},
-			),
-		]
-	];
 };
 
-my $authroutes = Router::Simple->new();
-$authroutes->connect('/arcady', {});
-PayDerbyDues::Auth::Middleware::wrap($app, authpaths => $authroutes);
+# add authentication wrapper
+my $app2 = PayDerbyDues::Auth::Middleware::wrap($app);
 
-sub _arcady {
-	my ($match, $env) = @_;
+# add global request dbh wrapper
+my $app3 = sub {
+	my $env = shift;
+	$PayDerbyDues::RequestGlobalData::dbh = PayDerbyDues::Utilities::DBConnect::GetDBH(); 
+	return $app2->($env);
+};
 
-	return PayDerbyDues::DerbyDues::request($env);
-}
+# add 404 wrapper
+my $app4 = sub {
+	my $env = shift;
+	my $match = $router->match($env);
+
+	unless ($match) {
+		return [
+			$PayDerbyDues::Constants::HTTP_NOT_FOUND_STATUS,
+			$PayDerbyDues::Constants::HTML_CONTENT_TYPE_HEADER,
+			[
+				Text::Handlebars->new()->render_string(
+					File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/404.hbs'),
+					{},
+				),
+			]
+		];
+	}
+	return $app3->($env);
+};

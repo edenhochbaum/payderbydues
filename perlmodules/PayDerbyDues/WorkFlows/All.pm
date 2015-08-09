@@ -7,6 +7,8 @@ use File::Slurp;
 use Text::Handlebars;
 
 use PayDerbyDues::RequestGlobalData;
+use PayDerbyDues::Auth::Data;
+use Plack::Response;
 
 my $LAYOUT = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/layout.hbs');
 
@@ -40,6 +42,18 @@ sub who {
 		who => 1,
 		container => $container_contents,
 	});
+}
+
+sub badlogin {
+	my ($match, $env) = @_;
+
+	return 'bad login!';
+}
+
+sub goodlogin {
+	my ($match, $env) = @_;
+
+	return 'good login, but unknown redirect!';
 }
 
 sub email_ed {
@@ -127,6 +141,67 @@ sub learnmore {
 		learnmore => 1,
 		container => $container_contents,
 	});
+}
+
+sub login {
+    my ($match, $env) = @_;
+
+    my $req = Plack::Request->new($env);
+
+    my %config = (
+	unknownredirect => '/goodlogin',
+	badloginredirect => '/badlogin',
+    );
+
+    my $dbh = $PayDerbyDues::RequestGlobalData::dbh;
+
+    my $auth = PayDerbyDues::Auth::Data->new($dbh);
+    my $user = $req->parameters->{email};
+    my $pass = $req->parameters->{password};
+    my $token = $auth->auth($user, $pass);
+    my $res = Plack::Response->new;
+
+    if (!$token) {
+        $res->redirect($config{badloginredirect});
+        $res->cookies->{s} = '';
+
+        return $res->finalize;
+    }
+    else {
+        my $redirect = _redirect_target($req, %config);
+        $res->redirect($redirect);
+        $res->cookies->{s} = $token;
+
+        return $res->finalize;
+    }
+}
+
+sub _redirect_target
+{
+    my ($req, %config) = @_;
+    return $req->query_parameters->{redirect_to} || $config{unknownredirect};
+}
+
+sub newuser {
+    my ($match, $env) = @_;
+
+    my $req = Plack::Request->new($env);
+
+    my $dbh = $PayDerbyDues::RequestGlobalData::dbh;
+
+    my %config = (
+    	newuserredirect => '/',
+    );
+
+    if ($req->method eq 'POST') {
+        my $auth = PayDerbyDues::Auth::Data->new($dbh);
+        my $params = $req->body_parameters();
+        my $status = $auth->newuser($params->{username}, $params->{password});
+        my $res = Plack::Response->new;
+        $res->redirect($config{newuserredirect} || '/');
+
+        return $res->finalize;
+    }
 }
 
 1;
