@@ -14,13 +14,13 @@ use PayDerbyDues::WorkFlows::All;
 
 my $router = Router::Simple->new();
 
-$router->connect('/', { method => \&PayDerbyDues::WorkFlows::All::index });
-$router->connect('/arcady', { method => \&_arcady });
-$router->connect('/rollout', { method => \&PayDerbyDues::WorkFlows::All::rollout });
-$router->connect('/who', { method => \&PayDerbyDues::WorkFlows::All::who });
-$router->connect('/learnmore', { method => \&PayDerbyDues::WorkFlows::All::learnmore });
-$router->connect('/feescheduleadmin', { method => \&PayDerbyDues::WorkFlows::All::fee_schedule_admin });
-$router->connect('/emailed', { method => \&PayDerbyDues::WorkFlows::All::email_ed });
+$router->connect('/', { themethod => \&PayDerbyDues::WorkFlows::All::index });
+$router->connect('/arcady', { themethod => \&_arcady });
+$router->connect('/rollout', { themethod => \&PayDerbyDues::WorkFlows::All::rollout });
+$router->connect('/who', { themethod => \&PayDerbyDues::WorkFlows::All::who });
+$router->connect('/learnmore', { themethod => \&PayDerbyDues::WorkFlows::All::learnmore });
+$router->connect('/feescheduleadmin', { themethod => \&PayDerbyDues::WorkFlows::All::fee_schedule_admin });
+$router->connect('/emailed', { themethod => \&PayDerbyDues::WorkFlows::All::email_ed });
 
 my $app = sub {
 	my $env = shift;
@@ -32,7 +32,7 @@ my $app = sub {
 			return [
 				$PayDerbyDues::Constants::HTTP_SUCCESS_STATUS,
 				$PayDerbyDues::Constants::HTML_CONTENT_TYPE_HEADER,
-				[ $match->{method}->($match, $env) ],
+				[ $match->{themethod}->($match, $env) ],
 			];
 		};
 
