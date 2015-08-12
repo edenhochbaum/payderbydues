@@ -25,7 +25,6 @@ my $app = sub {
 		my $rv = eval {
 			if($match->{dont_finalize}) {
 				$match->{func}->($match, $env);
-
 			}
 			else {
 				[
@@ -52,14 +51,15 @@ my $app = sub {
 # add authentication wrapper
 my $app2 = PayDerbyDues::Auth::Middleware::wrap($app);
 
-# add global request dbh wrapper
+# add global request middleware wrapper
+# this just creates a $dbh for now
 my $app3 = sub {
 	my $env = shift;
 	$PayDerbyDues::RequestGlobalData::dbh = PayDerbyDues::Utilities::DBConnect::GetDBH(); 
 	return $app2->($env);
 };
 
-# add 404 wrapper
+# add 404 middleware wrapper
 my $app4 = sub {
 	my $env = shift;
 	my $match = $router->match($env);

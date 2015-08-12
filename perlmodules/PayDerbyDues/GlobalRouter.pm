@@ -5,7 +5,6 @@ use warnings;
 
 use PayDerbyDues::WorkFlows::All;
 use PayDerbyDues::DerbyDues;
-use PayDerbyDues::Auth::Middleware; # ugh
 
 {
 my $GlobalRouter = '';

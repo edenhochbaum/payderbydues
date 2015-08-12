@@ -4,13 +4,14 @@ use strict;
 use warnings;
 
 use Crypt::Bcrypt::Easy;
+use PayDerbyDues::RequestGlobalData;
 
 sub new
 {
-    my ($class, $dbh) = @_;
+    my ($class) = @_;
 
     bless {
-        dbh => $dbh,
+        dbh => $PayDerbyDues::RequestGlobalData::dbh,
     }, $class;
 }
 
