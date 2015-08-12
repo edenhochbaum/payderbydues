@@ -13,14 +13,24 @@ use Paws::SES::Content;
 use Paws::SES::Body;
 use Paws::SES::Message;
 
+use PayDerbyDues::Utilities::Validation;
+
 sub SendWelcomeEmail {
 	my ($args) = @_;
-	my ($toaddress, $toname, $toleague) = @{$args}{qw(TOADDRESS TONAME TOLEAGUE)};
+
+	use Data::Dumper;
+	warn Dumper($args);
+	va($args, [qw(TOADDRESS TONAME TOLEAGUE)], [qw(SUBJECT BODY)]);
+
+	my ($toaddress, $toname, $toleague, $subject, $body) = @{$args}{qw(TOADDRESS TONAME TOLEAGUE SUBJECT BODY)};
 
 	Carp::Assert::assert(Mail::RFC822::Address::valid($toaddress));
 
-	my $subject = _WelcomeSubject();
-	my $body = _WelcomeBody($args);
+	$subject	||= _WelcomeSubject({});
+	$body		||= _WelcomeBody({
+		TONAME => $toname,
+		TOLEAGUE => $toleague,
+	});
 
 	# FIXME: shouldn't hard-code region
 	my $ses = Paws->service('SES', region => 'us-west-2');
@@ -41,18 +51,25 @@ sub SendWelcomeEmail {
 			),
 
 		),
-		Source => q/info@payderbydues.com/, 
+		Source => q/info@payderbydues.com/,
 	);
 }
 
 sub _WelcomeSubject {
-	q/welcome to pdd subject/;
+	my ($args) = @_;
+
+	va($args, [], []);
+
+	return "Activate your account at PayDerbyDues!";
 }
 
 sub _WelcomeBody {
 	my ($args) = @_;
 
-	require Data::Dumper;
+	va($args, [qw(TONAME TOLEAGUE)], [qw(INVITEDBY)]);
+
+	my ($name, $league, $invitedby) = @{$args}{qw(TONAME TOLEAGUE INVITEDBY)};
+	$invitedby ||= q/Eden Hochbaum/;
 
 	my $WELCOMETEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/emails/welcome.hbs');
 
@@ -62,9 +79,9 @@ sub _WelcomeBody {
 
 	# FIXME: implement this as handlebars template, with real copy
 	return $handlebars->render_string($WELCOMETEMPLATE, {
-		name => $args->{TONAME},
-		league => $args->{TOLEAGUE},
-		invitedby => 'Eden Hochbaum',
+		name => $name,
+		league => $league,
+		invitedby => $invitedby,
 	});
 }
 

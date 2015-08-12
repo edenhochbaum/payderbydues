@@ -1,4 +1,4 @@
-package PayDerbyDues::Utilities::ValidateArgs;
+package PayDerbyDues::Utilities::Validation;
 
 use strict;
 use warnings;
@@ -20,10 +20,13 @@ sub va {
 	my %requiredhash;
 	my %allowedhash;
 	eval {
-		@requiredhash{@$requiredexisting} = 1 x scalar(@$requiredexisting);
-		@allowedhash{@$allowedexisting} = 1 x scalar(@$allowedexisting);
+		@requiredhash{@$requiredexisting} = ('1') x scalar(@$requiredexisting);
+		@allowedhash{@$allowedexisting} = ('1') x scalar(@$allowedexisting);
 	};
 	Carp::confess($@) if ($@);
+
+	use Data::Dumper;
+	print Dumper(\%requiredhash);
 
 	foreach my $key (keys %$arghash) {
 		next if (delete $requiredhash{$key});

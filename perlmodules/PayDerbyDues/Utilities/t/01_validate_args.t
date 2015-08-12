@@ -3,7 +3,7 @@ use warnings;
 
 use Test::Simple tests => 3;
 
-use PayDerbyDues::Utilities::ValidateArgs;
+use PayDerbyDues::Utilities::Validation;
 
 ok( # passes
 	sub {
