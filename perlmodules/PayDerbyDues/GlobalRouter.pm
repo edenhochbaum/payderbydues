@@ -19,6 +19,7 @@ sub _GetGlobalRouter {
 	$GlobalRouter->connect('/emailed', { func => \&PayDerbyDues::WorkFlows::All::email_ed, requires_auth => 1 });
 	$GlobalRouter->connect('/arcady', { func => \&PayDerbyDues::WorkFlows::All::arcady, requires_auth => 1 });
 	$GlobalRouter->connect('/userdashboard', { func => \&PayDerbyDues::WorkFlows::All::userdashboard, requires_auth => 1});
+	$GlobalRouter->connect('/logout', { func => \&PayDerbyDues::WorkFlows::All::logout, requires_auth => 1});
 
 	# OPEN TO THE WORLD #
 	$GlobalRouter->connect('/rollout', { func => \&PayDerbyDues::WorkFlows::All::rollout, requires_auth => ''});

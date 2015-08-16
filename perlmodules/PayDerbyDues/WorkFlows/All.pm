@@ -30,7 +30,19 @@ sub rollout {
 		title => 'rollout',
 		rollout => 1,
 		container => $container_contents,
+		loggedinas => $PayDerbyDues::RequestGlobalData::userid,
 	}));
+
+	return $res->finalize;
+}
+
+sub logout {
+	my ($match, $env) = @_;
+
+	my $res = Plack::Response->new($PayDerbyDues::Constants::HTTP_SUCCESS_STATUS);
+	$res->content_type('text/html');
+
+	$res->body('not actually doing the logout yet . . . should do that and re-route somewhere');
 
 	return $res->finalize;
 }
@@ -50,6 +62,7 @@ sub who {
 		title => 'who',
 		who => 1,
 		container => $container_contents,
+		loggedinas => $PayDerbyDues::RequestGlobalData::userid,
 	}));
 
 	return $res->finalize;
@@ -144,6 +157,7 @@ sub fee_schedule_admin {
 		title => 'fee schedule admin',
 		feescheduleadmin => 1,
 		container => $container_contents,
+		loggedinas => $PayDerbyDues::RequestGlobalData::userid,
 	}));
 
 	return $res->finalize;
@@ -177,6 +191,7 @@ sub learnmore {
 		title => 'learnmore',
 		learnmore => 1,
 		container => $container_contents,
+		loggedinas => $PayDerbyDues::RequestGlobalData::userid,
 	}));
 
 	return $res->finalize;
@@ -259,6 +274,7 @@ sub newuser {
 			title => 'new user',
 			newuser => 1,
 			container => $container_contents,
+			loggedinas => $PayDerbyDues::RequestGlobalData::userid,
 		}));
 
 		return $res->finalize;
@@ -283,6 +299,7 @@ sub userdashboard {
 		title => 'learnmore',
 		userdashboard => 1,
 		container => $container_contents,
+		loggedinas => $PayDerbyDues::RequestGlobalData::userid,
 	}));
 
 	return $res->finalize;

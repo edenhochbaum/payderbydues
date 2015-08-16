@@ -38,6 +38,7 @@
             <li{{#if userdashboard}} class="active"{{/if}}><a href="/userdashboard">User Dashboard</a></li>
             <li{{#if feescheduleadmin}} class="active"{{/if}}><a href="/feescheduleadmin">Fee Schedule Admin</a></li>
           </ul>
+		{{#if loggedinas}}<div class="navbar-text navbar-right">logged in as {{loggedinas}} (<a href="/logout">logout</a>)</div>{{/if}}
         </div><!--/.nav-collapse -->
       </div>
     </nav>
