@@ -9,6 +9,4 @@ our $dbh;
 
 our $userid;
 
-our $username;
-
 1;
