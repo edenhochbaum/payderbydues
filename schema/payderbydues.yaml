@@ -36,6 +36,15 @@ schema public:
     min_value: null
     owner: ehochbaum
     start_value: 1
+  sequence users_id_seq:
+    cache_value: 1
+    increment_by: 1
+    max_value: null
+    min_value: 100
+    owner: ehochbaum
+    owner_column: id
+    owner_table: users
+    start_value: 100
   table company:
     columns:
     - id:
@@ -187,6 +196,7 @@ schema public:
   table users:
     columns:
     - id:
+        default: nextval('users_id_seq'::regclass)
         not_null: true
         type: integer
     - email:
