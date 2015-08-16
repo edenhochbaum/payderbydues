@@ -39,11 +39,36 @@ my $app = sub {
 
 };
 
-# add authentication wrapper
-my $app2 = PayDerbyDues::Auth::Middleware::wrap($app);
+# add authentication middleware wrapper
+my $app2 = sub {
+	my $env = shift;
 
-# add global request middleware wrapper
-# this just creates a $dbh for now
+	my %config = (
+	    unauthredirect => '/',
+	    timeout_sec => 30 * 60,
+	);
+
+	# TODO: no need to re-run routing logic at each layer of middleware
+	my $match = $router->match($env) || die 'too late not to have a match'; 
+
+	# TODO: also set $PayDerbyDues::RequestGlobal::Data::username here?
+	if ($match->{requires_auth}) {
+		$PayDerbyDues::RequestGlobalData::userid = PayDerbyDues::Auth::Middleware::check_auth($env, $PayDerbyDues::RequestGlobalData::dbh, %config);
+		unless ($PayDerbyDues::RequestGlobalData::userid) {
+			my $res = Plack::Response->new;
+			$res->redirect($config{unauthredirect});
+
+			warn "Unauthenticated user detected";
+			return $res->finalize;
+		}
+
+    		warn "Authenticated as [$PayDerbyDues::RequestGlobalData::userid]";
+	}
+
+	return $app->($env);
+};
+
+# add $dbh-creation middleware wrapper
 my $app3 = sub {
 	my $env = shift;
 	$PayDerbyDues::RequestGlobalData::dbh = PayDerbyDues::Utilities::DBConnect::GetDBH(); 

@@ -225,7 +225,7 @@ sub newuser {
     my ($match, $env) = @_;
 
     my %config = (
-    	newuserredirect => '/',
+    	newuserredirect => '/userdashboard',
     );
 
     my $dbh = $PayDerbyDues::RequestGlobalData::dbh;
@@ -263,6 +263,30 @@ sub newuser {
 
 		return $res->finalize;
 	}
+}
+
+sub userdashboard {
+	my ($match, $env) = @_;
+
+	my $handlebars = Text::Handlebars->new();
+
+	my $CONTENT = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/userdashboard.hbs');
+
+	my $container_contents = $handlebars->render_string($CONTENT, {
+		userid => $PayDerbyDues::RequestGlobalData::userid,
+	});
+
+	my $res = Plack::Response->new($PayDerbyDues::Constants::HTTP_SUCCESS_STATUS);
+	$res->content_type('text/html');
+
+	$res->body($handlebars->render_string($LAYOUT, {
+		title => 'learnmore',
+		userdashboard => 1,
+		container => $container_contents,
+	}));
+
+	return $res->finalize;
+
 }
 
 sub arcady {
