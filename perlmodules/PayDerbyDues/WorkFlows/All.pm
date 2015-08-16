@@ -234,9 +234,11 @@ sub newuser {
     my $parameters = $req->parameters;
 
 	if ($parameters->{nextoperation}) {
+		my ($username, $password) = ($parameters->{inputEmail}, $parameters->{inputPassword});
+
 		my $auth = PayDerbyDues::Auth::Data->new($dbh);
-		my $params = $req->body_parameters();
-		my $status = $auth->newuser($params->{username}, $params->{password});
+		my $status = $auth->newuser($username, $password);
+
 		my $res = Plack::Response->new;
 		$res->redirect($config{newuserredirect} || '/');
 
@@ -247,7 +249,7 @@ sub newuser {
 
 		my $CONTENT = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/newuser.hbs');
 		my $container_contents = $handlebars->render_string($CONTENT, {
-			message => 'hello world',
+			message => 'lorem ipsum',
 		});
 
 		my $res = Plack::Response->new($PayDerbyDues::Constants::HTTP_SUCCESS_STATUS);
