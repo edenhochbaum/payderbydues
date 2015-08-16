@@ -224,23 +224,43 @@ sub _redirect_target
 sub newuser {
     my ($match, $env) = @_;
 
-    my $req = Plack::Request->new($env);
-
-    my $dbh = $PayDerbyDues::RequestGlobalData::dbh;
-
     my %config = (
     	newuserredirect => '/',
     );
 
-    if ($req->method eq 'POST') {
-        my $auth = PayDerbyDues::Auth::Data->new($dbh);
-        my $params = $req->body_parameters();
-        my $status = $auth->newuser($params->{username}, $params->{password});
-        my $res = Plack::Response->new;
-        $res->redirect($config{newuserredirect} || '/');
+    my $dbh = $PayDerbyDues::RequestGlobalData::dbh;
 
-        return $res->finalize;
-    }
+    my $req = Plack::Request->new($env);
+    my $parameters = $req->parameters;
+
+	if ($parameters->{nextoperation}) {
+		my $auth = PayDerbyDues::Auth::Data->new($dbh);
+		my $params = $req->body_parameters();
+		my $status = $auth->newuser($params->{username}, $params->{password});
+		my $res = Plack::Response->new;
+		$res->redirect($config{newuserredirect} || '/');
+
+		return $res->finalize;
+	}
+	else {
+		my $handlebars = Text::Handlebars->new();
+
+		my $CONTENT = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/newuser.hbs');
+		my $container_contents = $handlebars->render_string($CONTENT, {
+			message => 'hello world',
+		});
+
+		my $res = Plack::Response->new($PayDerbyDues::Constants::HTTP_SUCCESS_STATUS);
+		$res->content_type('text/html');
+
+		$res->body($handlebars->render_string($LAYOUT, {
+			title => 'new user',
+			newuser => 1,
+			container => $container_contents,
+		}));
+
+		return $res->finalize;
+	}
 }
 
 sub arcady {
