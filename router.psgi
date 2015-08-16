@@ -23,20 +23,11 @@ my $app = sub {
 
 	if (my $match = $router->match($env)) {
 		my $rv = eval {
-			if($match->{dont_finalize}) {
-				$match->{func}->($match, $env);
-			}
-			else {
-				[
-					$PayDerbyDues::Constants::HTTP_SUCCESS_STATUS,
-					$PayDerbyDues::Constants::HTML_CONTENT_TYPE_HEADER,
-					[ $match->{func}->($match, $env) ],
-				];
-			}
+			$match->{func}->($match, $env);
 		};
 
 		if ($@) {
-			return [
+			$rv = [
 				$PayDerbyDues::Constants::HTTP_INTERNAL_ERROR_STATUS,
 				$PayDerbyDues::Constants::PLAIN_CONTENT_TYPE_HEADER,
 				["ERROR!!! $@"],
