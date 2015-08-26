@@ -20,6 +20,13 @@ schema public:
     owner_column: id
     owner_table: feeschedule
     start_value: 1
+  sequence invoiceitem_id_seq:
+    cache_value: 1
+    increment_by: 1
+    max_value: null
+    min_value: null
+    owner: ehochbaum
+    start_value: 1
   sequence league_id_seq:
     cache_value: 1
     increment_by: 1
@@ -29,7 +36,21 @@ schema public:
     owner_column: id
     owner_table: league
     start_value: 1
+  sequence leaguemember_id_seq:
+    cache_value: 1
+    increment_by: 1
+    max_value: null
+    min_value: null
+    owner: ehochbaum
+    start_value: 1
   sequence member_id_seq:
+    cache_value: 1
+    increment_by: 1
+    max_value: null
+    min_value: null
+    owner: ehochbaum
+    start_value: 1
+  sequence payment_id_seq:
     cache_value: 1
     increment_by: 1
     max_value: null
@@ -77,6 +98,8 @@ schema public:
         type: integer
     - value:
         type: numeric(10,2)
+    - stripe_planid:
+        type: character varying(40)
     foreign_keys:
       feeschedule_leagueid_fkey:
         columns:
@@ -96,6 +119,37 @@ schema public:
         columns:
         - leagueid
         - name
+  table invoiceitem:
+    columns:
+    - id:
+        default: nextval('invoiceitem_id_seq'::regclass)
+        not_null: true
+        type: integer
+    - amount:
+        type: numeric(10,2)
+    - stripe_invoiceitemid:
+        type: character varying(40)
+    - leaguememberid:
+        not_null: true
+        type: integer
+    foreign_keys:
+      invoiceitem_leaguememberid_fkey:
+        columns:
+        - leaguememberid
+        references:
+          columns:
+          - id
+          schema: public
+          table: leaguemember
+    indexes:
+      invoiceitem_leaguemember:
+        keys:
+        - leaguememberid
+    owner: ehochbaum
+    primary_key:
+      invoiceitem_pkey:
+        columns:
+        - id
   table league:
     columns:
     - id:
@@ -125,7 +179,23 @@ schema public:
         type: integer
     - stripe_customerid:
         type: character varying(40)
+    - id:
+        default: nextval('leaguemember_id_seq'::regclass)
+        not_null: true
+        type: integer
+    - feescheduleid:
+        type: integer
+    - stripe_subscriptionid:
+        type: character varying(40)
     foreign_keys:
+      leaguemember_feescheduleid_fkey:
+        columns:
+        - feescheduleid
+        references:
+          columns:
+          - id
+          schema: public
+          table: feeschedule
       leaguemember_leagueid_fkey:
         columns:
         - leagueid
@@ -143,6 +213,10 @@ schema public:
           schema: public
           table: member
     owner: ehochbaum
+    primary_key:
+      leaguemember_pkey:
+        columns:
+        - id
   table member:
     columns:
     - id:
@@ -168,6 +242,33 @@ schema public:
     owner: ehochbaum
     primary_key:
       member_pkey:
+        columns:
+        - id
+  table payment:
+    columns:
+    - id:
+        default: nextval('payment_id_seq'::regclass)
+        not_null: true
+        type: integer
+    - leaguememberid:
+        not_null: true
+        type: integer
+    - amount:
+        type: numeric(10,2)
+    - stripe_chargeid:
+        type: character varying(40)
+    foreign_keys:
+      payment_leaguememberid_fkey:
+        columns:
+        - leaguememberid
+        references:
+          columns:
+          - id
+          schema: public
+          table: leaguemember
+    owner: ehochbaum
+    primary_key:
+      payment_pkey:
         columns:
         - id
   table tokens:
