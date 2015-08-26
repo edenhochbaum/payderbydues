@@ -113,4 +113,10 @@ sub newuser
                      $email, $crypted);
 }
 
+sub logout
+{
+    my ($self, $token) = @_;
+
+    $self->{dbh}->do(qq{DELETE FROM tokens WHERE token = ?}, {}, $token);
+}
 1;

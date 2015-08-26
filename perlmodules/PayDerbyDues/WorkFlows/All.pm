@@ -36,17 +36,6 @@ sub rollout {
 	return $res->finalize;
 }
 
-sub logout {
-	my ($match, $env) = @_;
-
-	my $res = Plack::Response->new($PayDerbyDues::Constants::HTTP_SUCCESS_STATUS);
-	$res->content_type('text/html');
-
-	$res->body('not actually doing the logout yet . . . should do that and re-route somewhere');
-
-	return $res->finalize;
-}
-
 sub who {
 	my ($match, $env) = @_;
 
@@ -168,11 +157,14 @@ sub index {
 
 	my $handlebars = Text::Handlebars->new();
 	my $TEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/index.hbs');
+	my $userid = $PayDerbyDues::RequestGlobalData::userid;
+	my $loggedin = $userid ? 1 : 0;
+	my $userinfo = get_user($userid);
 
 	my $res = Plack::Response->new($PayDerbyDues::Constants::HTTP_SUCCESS_STATUS);
 	$res->content_type('text/html');
 
-	$res->body($handlebars->render_string($TEMPLATE, {}));
+	$res->body($handlebars->render_string($TEMPLATE, { realname => $userinfo->{realname}, email => $userinfo->{email}, loggedin => $loggedin }));
 	return $res->finalize;
 }
 
@@ -203,7 +195,7 @@ sub login {
     my $req = Plack::Request->new($env);
 
     my %config = (
-	unknownredirect => '/goodlogin',
+	unknownredirect => '/',
 	badloginredirect => '/badlogin',
     );
 
@@ -228,6 +220,23 @@ sub login {
 
         return $res->finalize;
     }
+}
+
+sub logout {
+    my ($match, $env) = @_;
+
+    my $req = Plack::Request->new($env);
+
+    my $dbh = $PayDerbyDues::RequestGlobalData::dbh;
+    my $auth = PayDerbyDues::Auth::Data->new($dbh);
+    my $token = $req->cookies->{s};
+    $auth->logout($token);
+
+    my $res = Plack::Response->new();
+    $res->cookies->{s} = '';
+    $res->redirect('/');
+
+    return $res->finalize();
 }
 
 sub _redirect_target
