@@ -1,0 +1,30 @@
+Perl
+----
+Install perl (at least v5.16) and plack
+Install File::Slurp, Text::Handlebars, Crypt::Bcrypt::Easy, Net::Stripe,
+Mail::RFC822::Address, Paws, Test::Simple
+and DBI as well as the postgres DBD (libdbd-pg-perl)
+
+Database
+--------
+Install postgres server and client, as well as libpq-dev
+In the following commands, replace $username with your actual username.
+su to postgres and create a user and a database:
+  createuser -DRS $username
+  createdb -O $username payderbydues
+Then, run "psql payderbydues" and type in:
+  ALTER SCHEMA public OWNER TO $username;
+
+Install python (2.x, not 3), and python-dev
+Install python-setuptools to get easy_install
+Run "easy_install Pyrseas" to get yamltodb and dbtoyaml
+
+Run: 
+  yamltodb -u payderbydues ~/payderbydues/schema/payderbydues.yaml
+
+Without the -u, it will print a bunch of SQL to create tables and the like,
+with the -u it should silently create that stuff in the DB.
+
+Test Data
+---------
+You'll have to do this manually with psql for now.
