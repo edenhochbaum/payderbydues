@@ -159,7 +159,8 @@ sub index {
 	my $TEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/index.hbs');
 	my $userid = $PayDerbyDues::RequestGlobalData::userid;
 	my $loggedin = $userid ? 1 : 0;
-	my $userinfo = get_user($userid);
+	my $userinfo = { realname => 'foo', email => 'bar' };
+	#my $userinfo = get_user($userid);
 
 	my $res = Plack::Response->new($PayDerbyDues::Constants::HTTP_SUCCESS_STATUS);
 	$res->content_type('text/html');
