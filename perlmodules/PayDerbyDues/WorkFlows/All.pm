@@ -3,58 +3,28 @@ package PayDerbyDues::WorkFlows::All;
 use strict;
 use warnings;
 
-use File::Slurp;
-use Text::Handlebars;
-
 use PayDerbyDues::RequestGlobalData;
 use PayDerbyDues::Auth::Data;
 use PayDerbyDues::Constants;
+use Plack::Request;
 use Plack::Response;
-
-my $LAYOUT = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/layout.hbs');
 
 # each takes in ($match, $env) and returns $body #
 
 sub rollout {
-	my ($match, $env) = @_;
-
-	my $handlebars = Text::Handlebars->new();
-
-	my $CONTENT = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/rollout.hbs');
-	my $container_contents = $handlebars->render_string($CONTENT, {});
-
-	my $res = Plack::Response->new($PayDerbyDues::Constants::HTTP_SUCCESS_STATUS);
-	$res->content_type('text/html');
-
-	$res->body($handlebars->render_string($LAYOUT, {
+	PayDerbyDues::View::render_layout('rollout', {
 		title => 'rollout',
 		rollout => 1,
-		container => $container_contents,
 		loggedinas => $PayDerbyDues::RequestGlobalData::userid,
-	}));
-
-	return $res->finalize;
+	});
 }
 
 sub who {
-	my ($match, $env) = @_;
-
-	my $handlebars = Text::Handlebars->new();
-
-	my $CONTENT = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/who.hbs');
-	my $container_contents = $handlebars->render_string($CONTENT, {});
-
-	my $res = Plack::Response->new($PayDerbyDues::Constants::HTTP_SUCCESS_STATUS);
-	$res->content_type('text/html');
-
-	$res->body($handlebars->render_string($LAYOUT, {
+	PayDerbyDues::View::render_layout('who', {
 		title => 'who',
 		who => 1,
-		container => $container_contents,
 		loggedinas => $PayDerbyDues::RequestGlobalData::userid,
-	}));
-
-	return $res->finalize;
+	});
 }
 
 sub badlogin {
@@ -103,13 +73,6 @@ sub email_ed {
 sub fee_schedule_admin {
 	my ($match, $env) = @_;
 
-	my $res = Plack::Response->new($PayDerbyDues::Constants::HTTP_SUCCESS_STATUS);
-	$res->content_type('text/html');
-
-	my $handlebars = Text::Handlebars->new();
-
-	my $TEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/feescheduleadmin.hbs');
-
 	my $dbh = $PayDerbyDues::RequestGlobalData::dbh;
 
 	require Plack::Request;
@@ -136,58 +99,36 @@ sub fee_schedule_admin {
 		$tmp;
 	} @$data;
 
-	my $vars = {
-		rows => $data,
-	};
-
-	my $container_contents = $handlebars->render_string($TEMPLATE, $vars);
-
-	$res->body($handlebars->render_string($LAYOUT, {
+	return PayDerbyDues::View::render_layout('feescheduleadmin', {
 		title => 'fee schedule admin',
 		feescheduleadmin => 1,
-		container => $container_contents,
 		loggedinas => $PayDerbyDues::RequestGlobalData::userid,
-	}));
-
-	return $res->finalize;
+	}, {
+		rows => $data,
+	});
 }
 
 sub index {
 	my ($match, $env) = @_;
 
-	my $handlebars = Text::Handlebars->new();
-	my $TEMPLATE = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/index.hbs');
 	my $userid = $PayDerbyDues::RequestGlobalData::userid;
 	my $loggedin = $userid ? 1 : 0;
 	my $userinfo = { realname => 'foo', email => 'bar' };
 	#my $userinfo = get_user($userid);
 
-	my $res = Plack::Response->new($PayDerbyDues::Constants::HTTP_SUCCESS_STATUS);
-	$res->content_type('text/html');
-
-	$res->body($handlebars->render_string($TEMPLATE, { realname => $userinfo->{realname}, email => $userinfo->{email}, loggedin => $loggedin }));
-	return $res->finalize;
+	PayDerbyDues::View::render('index', {
+	    realname => $userinfo->{realname},
+	    email => $userinfo->{email},
+	    loggedin => $loggedin,
+	});
 }
 
 sub learnmore {
-	my ($match, $env) = @_;
-
-	my $handlebars = Text::Handlebars->new();
-
-	my $CONTENT = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/learnmore.hbs');
-	my $container_contents = $handlebars->render_string($CONTENT, {});
-
-	my $res = Plack::Response->new($PayDerbyDues::Constants::HTTP_SUCCESS_STATUS);
-	$res->content_type('text/html');
-
-	$res->body($handlebars->render_string($LAYOUT, {
+	PayDerbyDues::View::render_layout('learnmore', {
 		title => 'learnmore',
 		learnmore => 1,
-		container => $container_contents,
 		loggedinas => $PayDerbyDues::RequestGlobalData::userid,
-	}));
-
-	return $res->finalize;
+	});
 }
 
 sub login {
@@ -209,17 +150,17 @@ sub login {
     my $res = Plack::Response->new;
 
     if (!$token) {
-        $res->redirect($config{badloginredirect});
-        $res->cookies->{s} = '';
+	$res->redirect($config{badloginredirect});
+	$res->cookies->{s} = '';
 
-        return $res->finalize;
+	return $res->finalize;
     }
     else {
-        my $redirect = _redirect_target($req, %config);
-        $res->redirect($redirect);
-        $res->cookies->{s} = $token;
+	my $redirect = _redirect_target($req, %config);
+	$res->redirect($redirect);
+	$res->cookies->{s} = $token;
 
-        return $res->finalize;
+	return $res->finalize;
     }
 }
 
@@ -270,50 +211,23 @@ sub newuser {
 		return $res->finalize;
 	}
 	else {
-		my $handlebars = Text::Handlebars->new();
-
-		my $CONTENT = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/newuser.hbs');
-		my $container_contents = $handlebars->render_string($CONTENT, {
+		return PayDerbyDues::View::render_layout('newuser', {
 			message => 'lorem ipsum',
-		});
-
-		my $res = Plack::Response->new($PayDerbyDues::Constants::HTTP_SUCCESS_STATUS);
-		$res->content_type('text/html');
-
-		$res->body($handlebars->render_string($LAYOUT, {
 			title => 'new user',
 			newuser => 1,
-			container => $container_contents,
 			loggedinas => $PayDerbyDues::RequestGlobalData::userid,
-		}));
-
-		return $res->finalize;
+		});
 	}
 }
 
 sub userdashboard {
-	my ($match, $env) = @_;
-
-	my $handlebars = Text::Handlebars->new();
-
-	my $CONTENT = File::Slurp::read_file('/home/ec2-user/payderbydues/www/handlebarstemplates/userdashboard.hbs');
-
-	my $container_contents = $handlebars->render_string($CONTENT, {
+	PayDerbyDues::View::render_layout('userdashboard', {
+		title => 'userdashboard',
+		userdashboard => 1,
+		loggedinas => $PayDerbyDues::RequestGlobalData::userid,
+	}, {
 		userid => $PayDerbyDues::RequestGlobalData::userid,
 	});
-
-	my $res = Plack::Response->new($PayDerbyDues::Constants::HTTP_SUCCESS_STATUS);
-	$res->content_type('text/html');
-
-	$res->body($handlebars->render_string($LAYOUT, {
-		title => 'learnmore',
-		userdashboard => 1,
-		container => $container_contents,
-		loggedinas => $PayDerbyDues::RequestGlobalData::userid,
-	}));
-
-	return $res->finalize;
-
 }
 
 sub arcady {
@@ -322,6 +236,5 @@ sub arcady {
 	require PayDerbyDues::DerbyDues;
 	return PayDerbyDues::DerbyDues::request($env);
 }
-
 
 1;
