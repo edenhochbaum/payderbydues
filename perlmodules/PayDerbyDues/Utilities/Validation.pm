@@ -25,9 +25,6 @@ sub va {
 	};
 	Carp::confess($@) if ($@);
 
-	use Data::Dumper;
-	print Dumper(\%requiredhash);
-
 	foreach my $key (keys %$arghash) {
 		next if (delete $requiredhash{$key});
 		Carp::confess(sprintf('invalid key [%s]', $key)) unless ($allowedhash{$key});
