@@ -180,6 +180,10 @@ schema public:
         type: integer
     - stripe_subscriptionid:
         type: character varying(40)
+    - roleid:
+        default: '1'
+        not_null: true
+        type: integer
     foreign_keys:
       leaguemember_feescheduleid_fkey:
         columns:
