@@ -4,14 +4,16 @@ use strict;
 use warnings;
 
 use Crypt::Bcrypt::Easy;
-use PayDerbyDues::RequestGlobalData;
 
 sub new
 {
-    my ($class) = @_;
+    my ($class, $dbh) = @_;
+
+    # TODO: remove this unnec db hit
+    die 'bad dbh' unless ($dbh->ping);
 
     bless {
-        dbh => $PayDerbyDues::RequestGlobalData::dbh,
+        dbh => $dbh,
     }, $class;
 }
 

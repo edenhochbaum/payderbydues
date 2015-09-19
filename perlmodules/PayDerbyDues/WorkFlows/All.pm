@@ -15,7 +15,7 @@ sub rollout {
 	PayDerbyDues::View::render_layout('rollout', {
 		title => 'rollout',
 		rollout => 1,
-		loggedinas => $PayDerbyDues::RequestGlobalData::userid,
+		loggedinas => $PayDerbyDues::RequestGlobalData::user->{USERLEGALNAME},
 	});
 }
 
@@ -23,7 +23,7 @@ sub who {
 	PayDerbyDues::View::render_layout('who', {
 		title => 'who',
 		who => 1,
-		loggedinas => $PayDerbyDues::RequestGlobalData::userid,
+		loggedinas => $PayDerbyDues::RequestGlobalData::user->{USERLEGALNAME},
 	});
 }
 
@@ -102,7 +102,7 @@ sub fee_schedule_admin {
 	return PayDerbyDues::View::render_layout('feescheduleadmin', {
 		title => 'fee schedule admin',
 		feescheduleadmin => 1,
-		loggedinas => $PayDerbyDues::RequestGlobalData::userid,
+		loggedinas => $PayDerbyDues::RequestGlobalData::user->{USERLEGALNAME},
 	}, {
 		rows => $data,
 	});
@@ -111,8 +111,8 @@ sub fee_schedule_admin {
 sub index {
 	my ($match, $env) = @_;
 
-	my $userid = $PayDerbyDues::RequestGlobalData::userid;
-	my $loggedin = $userid ? 1 : 0;
+	my $userid = $PayDerbyDues::RequestGlobalData::user->{USERID};
+	my $loggedin = $userid ? 2 : 0;
 	my $userinfo = { realname => 'foo', email => 'bar' };
 	#my $userinfo = get_user($userid);
 
@@ -127,12 +127,18 @@ sub learnmore {
 	PayDerbyDues::View::render_layout('learnmore', {
 		title => 'learnmore',
 		learnmore => 1,
-		loggedinas => $PayDerbyDues::RequestGlobalData::userid,
+		loggedinas => $PayDerbyDues::RequestGlobalData::user->{USERLEGALNAME},
 	});
 }
 
 sub login {
     my ($match, $env) = @_;
+
+
+
+
+
+
 
     my $req = Plack::Request->new($env);
 
@@ -215,7 +221,7 @@ sub newuser {
 			message => 'lorem ipsum',
 			title => 'new user',
 			newuser => 1,
-			loggedinas => $PayDerbyDues::RequestGlobalData::userid,
+			loggedinas => $PayDerbyDues::RequestGlobalData::user->{USERLEGALNAME},
 		});
 	}
 }
@@ -224,9 +230,9 @@ sub userdashboard {
 	PayDerbyDues::View::render_layout('userdashboard', {
 		title => 'userdashboard',
 		userdashboard => 1,
-		loggedinas => $PayDerbyDues::RequestGlobalData::userid,
+		loggedinas => $PayDerbyDues::RequestGlobalData::user->{USERLEGALNAME},
 	}, {
-		userid => $PayDerbyDues::RequestGlobalData::userid,
+		userid => $PayDerbyDues::RequestGlobalData::user->{USERID},
 	});
 }
 
