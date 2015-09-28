@@ -1,0 +1,11 @@
+[
+	{
+		"name": "foo",
+		"columns": [
+			{
+				"name": "bar",
+				"datatype": "blah"
+			}
+		]
+	}
+]	
