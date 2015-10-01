@@ -28,34 +28,39 @@
 				"type": "array",
 				"minItems": 1,
 				"items": {
-					"title": "column",
-					"type": "object",
-					"properties": {
-						"name": {
-							"$ref": "#/definitions/columnname"
-						},
-						"datatype": {
-							"description": "the type of postgres datatype this is",
-							"type": "string"
-						},
-						"foreignkey": {
+					"oneOf": [
+						{
+							"title": "non foreign-key column",
 							"type": "object",
 							"properties": {
+								"name": {
+									"$ref": "#/definitions/columnname"
+								},
+								"datatype": {
+									"description": "the type of postgres datatype this is",
+									"type": "string"
+								},
+								"notes": { "type": "string" }
+							},
+							"required": ["name", "datatype"],
+							"additionalProperties": false
+						},
+						{
+							"title": "foreign-key column",
+							"type": "object",
+							"properties": {
+								"name": {
+									"$ref": "#/definitions/columnname"
+								},
 								"foreigntablename": {
 									"$ref" : "#/definitions/tablename"
 								},
-								"foreigncolumnname": {
-									"$ref": "#/definitions/columnname"
-								}
+								"notes": { "type": "string" }
 							},
-							"required": ["foreigntablename", "foreigncolumnname"],
+							"required": ["name", "foreigntablename"],
 							"additionalProperties": false
 						}
-					},
-					"required": ["name"],
-					"minProperties": 2,
-					"maxProperties": 2,
-					"additionalProperties": false
+					]
 				}
 			},
 			"uniquenessconstraints": {
@@ -64,12 +69,9 @@
 				"items": {
 					"title": "uniqueness constraint",
 					"description": "this is just a way of identifying that a tuple of columns needs to be unique in the table",
-					"type": "object",
-					"properties": {
-						"columnname": "string"
-					},
-					"additionalProperties": false,
-					"required": ["columnname"]
+					"type": "array",
+					"minItems": 1,
+					"items": { "$ref": "#/definitions/columnname" }
 				}
 			}
 		},

@@ -1,11 +1,187 @@
 [
 	{
-		"name": "foo",
+		"name": "feeschedule",
 		"columns": [
 			{
-				"name": "bar",
-				"datatype": "7"
+				"name": "name",
+				"datatype": "text"
+			},
+			{
+				"name": "leagueid",
+				"foreigntablename": "league"
+			},
+			{
+				"name": "value",
+				"datatype": "numeric(10,2)"
 			}
+		],
+		"uniquenessconstraints": [
+			["name", "leagueid"]
+		]
+	},
+	{
+		"name": "invoiceitem",
+		"columns": [
+			{
+				"name": "amount",
+				"datatype": "numeric(10,2)"
+			},
+			{
+				"name": "stripe_invoiceitemid",
+				"datatype": "character varying(40)"
+			},
+			{
+				"name": "leaguememberid",
+				"foreigntablename": "leaguemember"
+			}
+		],
+		"uniquenessconstraints": [
+			["stripe_invoiceitemid", "leaguememberid"]
+		]
+	},
+	{
+		"name": "league",
+		"columns": [
+			{
+				"name": "name",
+				"datatype": "text"
+			}
+		],
+		"uniquenessconstraints": [
+			["name"]
+		]
+	},
+	{
+		"name": "leaguestripedata",
+		"columns": [
+			{
+				"name": "leagueid",
+				"foreigntablename": "league"
+			},
+			{
+				"name": "stripe_account",
+				"datatype": "character varying(40)"
+			},
+			{
+				"name": "stripe_publickey",
+				"datatype": "character varying(40)"
+			},
+			{
+				"name": "stripe_secretkey",
+				"datatype": "character varying(40)"
+			}
+		],
+		"uniquenessconstraints": [
+			["leagueid"]
+		]
+	},
+	{
+		"name": "leaguemember",
+		"columns": [
+			{
+				"name": "leagueid",
+				"foreigntablename": "league"
+			},
+			{
+				"name": "userid",
+				"foreigntablename": "users"
+			}
+		],
+		"uniquenessconstraints": [
+			["leagueid", "userid"]
+		]
+	},
+	{
+		"name": "role",
+		"columns": [
+			{
+				"name": "name",
+				"datatype": "text"
+			}
+		],
+		"uniquenessconstraints": [
+			["name"]
+		]
+	},
+	{
+		"name": "leaguememberrole",
+		"columns": [
+			{
+				"name": "leaguememberid",
+				"foreigntablename": "leaguemember"
+			},
+			{
+				"name": "roleid",
+				"foreigntablename": "role"
+			}
+		],
+		"uniquenessconstraints": [
+			["leaguememberid", "roleid"]
+		]
+	},
+	{
+		"name": "payment",
+		"columns": [
+			{
+				"name": "leaguememberid",
+				"foreigntablename": "leaguemember"
+			},
+			{
+				"name": "value",
+				"datatype": "numeric(10,2)"
+			},
+			{
+				"name": "stripe_chargeid",
+				"datatype": "character varying(40)"
+			}
+		],
+		"uniquenessconstraints": [
+			["stripe_chargeid"]
+		]
+	},
+	{
+		"name": "users",
+		"columns": [
+			{
+				"name": "email",
+				"datatype": "character varying"
+			},
+			{
+				"name": "legalname",
+				"datatype": "character varying(100)"
+			},
+			{
+				"name": "derbyname",
+				"datatype": "character varying(100)"
+			},
+			{
+				"name": "password",
+				"notes": "hashed!",
+				"datatype": "character varying"
+			}
+		],
+		"uniquenessconstraints": [
+			["email"]
+		]
+	},
+	{
+		"name": "tokens",
+		"columns": [
+			{
+				"name": "value",
+				"datatype": "character varying(64)"
+			},
+			{
+				"name": "expires",
+				"datatype": "timestamp without time zone"
+			},
+			{
+				"name": "userid",
+				"foreigntablename": "users"
+			}
+		],
+		"uniquenessconstraints": [
+			["userid"]
 		]
 	}
 ]
