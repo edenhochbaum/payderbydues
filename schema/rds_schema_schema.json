@@ -1,6 +1,6 @@
 {
 	"$schema": "http://json-schema.org/draft-04/schema#",
-	"id": "https://www.payderbydues.com/schemas/example.json",
+	"id": "https://www.payderbydues.com/schema/rds_schema_schema.json",
 	"title": "Pay Derby Dues RDS Schema",
 	"definitions": {
 		"tablename": {
@@ -52,8 +52,10 @@
 							"additionalProperties": false
 						}
 					},
-					"additionalProperties": false,
-					"required": ["name", "datatype"]
+					"required": ["name"],
+					"minProperties": 2,
+					"maxProperties": 2,
+					"additionalProperties": false
 				}
 			},
 			"uniquenessconstraints": {
