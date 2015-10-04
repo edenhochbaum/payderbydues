@@ -12,7 +12,7 @@
 			},
 			{
 				"name": "value",
-				"datatype": "numeric(10,2)"
+				"datatype": "integer"
 			}
 		],
 		"uniquenessconstraints": [
@@ -23,8 +23,8 @@
 		"name": "invoiceitem",
 		"columns": [
 			{
-				"name": "amount",
-				"datatype": "numeric(10,2)"
+				"name": "value",
+				"datatype": "integer"
 			},
 			{
 				"name": "stripe_invoiceitemid",
@@ -128,7 +128,7 @@
 			},
 			{
 				"name": "value",
-				"datatype": "numeric(10,2)"
+				"datatype": "integer"
 			},
 			{
 				"name": "stripe_chargeid",
@@ -144,7 +144,7 @@
 		"columns": [
 			{
 				"name": "email",
-				"datatype": "character varying"
+				"datatype": "character varying(100)"
 			},
 			{
 				"name": "legalname",
@@ -157,7 +157,7 @@
 			{
 				"name": "password",
 				"notes": "hashed!",
-				"datatype": "character varying"
+				"datatype": "character varying(64)"
 			}
 		],
 		"uniquenessconstraints": [

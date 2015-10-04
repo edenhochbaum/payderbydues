@@ -1,0 +1,251 @@
+extension plpgsql:
+  description: PL/pgSQL procedural language
+  owner: rdsadmin
+  schema: pg_catalog
+  version: '1.0'
+schema public:
+  description: standard public schema
+  owner: ehochbaum
+  privileges:
+  - ehochbaum:
+    - all
+  - PUBLIC:
+    - all
+{{#table}}
+  sequence {{name}}_id_seq:
+    cache_value: 1
+    increment_by: 1
+    max_value: null
+    min_value: null
+    owner: ehochbaum
+    owner_column: id
+    owner_table: {{name}}
+    start_value: 1
+{{/#table}}
+{{#table}}
+  table {{name}}:
+    columns:
+    - id:
+        default: nextval('{{name}}_id_seq'::regclass)
+        not_null: true
+        type: integer
+{{#columns}}
+    - {{column}}:
+        not_null: true
+        type: {{type}}
+{{/#columns}}
+    owner: ehochbaum
+    primary_key:
+      {{name}}_pkey:
+        columns:
+        - id
+{{/#table}}
+  table feeschedule:
+    columns:
+    - id:
+        default: nextval('feeschedule_id_seq'::regclass)
+        not_null: true
+        type: integer
+    - name:
+        type: text
+    - leagueid:
+        type: integer
+    - value:
+        type: numeric(10,2)
+    - stripe_planid:
+        type: character varying(40)
+    foreign_keys:
+      feeschedule_leagueid_fkey:
+        columns:
+        - leagueid
+        references:
+          columns:
+          - id
+          schema: public
+          table: league
+    owner: ehochbaum
+    primary_key:
+      feeschedule_pkey:
+        columns:
+        - id
+    unique_constraints:
+      unique_leaguename:
+        columns:
+        - leagueid
+        - name
+  table invoiceitem:
+    columns:
+    - id:
+        default: nextval('invoiceitem_id_seq'::regclass)
+        not_null: true
+        type: integer
+    - amount:
+        type: numeric(10,2)
+    - stripe_invoiceitemid:
+        type: character varying(40)
+    - leaguememberid:
+        not_null: true
+        type: integer
+    foreign_keys:
+      invoiceitem_leaguememberid_fkey:
+        columns:
+        - leaguememberid
+        references:
+          columns:
+          - id
+          schema: public
+          table: leaguemember
+    indexes:
+      invoiceitem_leaguemember:
+        keys:
+        - leaguememberid
+    owner: ehochbaum
+    primary_key:
+      invoiceitem_pkey:
+        columns:
+        - id
+  table league:
+    columns:
+    - id:
+        default: nextval('league_id_seq'::regclass)
+        not_null: true
+        type: integer
+    - name:
+        type: text
+    - stripe_account:
+        type: character varying(40)
+    - stripe_publickey:
+        type: character varying(40)
+    - stripe_secretkey:
+        type: character varying(40)
+    owner: ehochbaum
+    unique_constraints:
+      unique_id:
+        columns:
+        - id
+  table leaguemember:
+    columns:
+    - leagueid:
+        not_null: true
+        type: integer
+    - userid:
+        not_null: true
+        type: integer
+    - stripe_customerid:
+        type: character varying(40)
+    - id:
+        default: nextval('leaguemember_id_seq'::regclass)
+        not_null: true
+        type: integer
+    - feescheduleid:
+        type: integer
+    - stripe_subscriptionid:
+        type: character varying(40)
+    - roleid:
+        default: '1'
+        not_null: true
+        type: integer
+    foreign_keys:
+      leaguemember_feescheduleid_fkey:
+        columns:
+        - feescheduleid
+        references:
+          columns:
+          - id
+          schema: public
+          table: feeschedule
+      leaguemember_leagueid_fkey:
+        columns:
+        - leagueid
+        references:
+          columns:
+          - id
+          schema: public
+          table: league
+      leaguemember_userid_fkey:
+        columns:
+        - userid
+        references:
+          columns:
+          - id
+          schema: public
+          table: users
+    owner: ehochbaum
+    primary_key:
+      leaguemember_pkey:
+        columns:
+        - id
+  table payment:
+    columns:
+    - id:
+        default: nextval('payment_id_seq'::regclass)
+        not_null: true
+        type: integer
+    - leaguememberid:
+        not_null: true
+        type: integer
+    - amount:
+        type: numeric(10,2)
+    - stripe_chargeid:
+        type: character varying(40)
+    foreign_keys:
+      payment_leaguememberid_fkey:
+        columns:
+        - leaguememberid
+        references:
+          columns:
+          - id
+          schema: public
+          table: leaguemember
+    owner: ehochbaum
+    primary_key:
+      payment_pkey:
+        columns:
+        - id
+  table tokens:
+    columns:
+    - userid:
+        type: integer
+    - token:
+        not_null: true
+        type: character varying(64)
+    - expires:
+        type: timestamp without time zone
+    foreign_keys:
+      tokens_userid_fkey:
+        columns:
+        - userid
+        references:
+          columns:
+          - id
+          schema: public
+          table: users
+    owner: ehochbaum
+    primary_key:
+      tokens_pkey:
+        columns:
+        - token
+  table users:
+    columns:
+    - id:
+        default: nextval('users_id_seq'::regclass)
+        not_null: true
+        type: integer
+    - email:
+        type: character varying
+    - password:
+        type: character varying
+    - legalname:
+        type: character varying(100)
+    - derbyname:
+        type: character varying(100)
+    owner: ehochbaum
+    primary_key:
+      users_pkey:
+        columns:
+        - id
+    unique_constraints:
+      users_email_key:
+        columns:
+        - email
+
