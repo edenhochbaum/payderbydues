@@ -29,7 +29,7 @@ unless ($result) {
 }
 my $translator = SQL::Translator->new(
 	show_warnings => 1,
-	producer => 'GraphViz',
+	producer => 'PostgreSQL',
 	parser => sub {
 		my ($tr, $validatedrdsschemajson) = @_;
 
@@ -51,6 +51,12 @@ my $translator = SQL::Translator->new(
 
 			$translatortable->add_field($primarykey);
 
+			$translatortable->add_constraint(
+				name => 'pk',
+				type => 'primary_key',
+				fields => [$primarykey],
+			);
+
 			foreach my $column (@{$table->{columns}}) {
 				my $field = SQL::Translator::Schema::Field->new(
 					name => $column->{name},
@@ -61,14 +67,26 @@ my $translator = SQL::Translator->new(
 				}
 
 				if (defined($column->{foreigntablename})) {
-					$field->data_type('integer'); # TODO: construction of SQL::Translator::Schema::Constraint
 					$field->is_foreign_key(1);
+
+					$translatortable->add_constraint(
+						type => 'foreign_key',
+						name => sprintf('fk_%s', $column->{name}),
+						fields => $field, # field in referring table
+						reference_fields => 'id',
+						reference_table => $column->{foreigntablename},
+						match_type => 'full',
+						on_delete => 'cascade',
+						on_update => '',
+					);
+
 				}
 
 				$translatortable->add_field($field);
 			}
 
 			$tr->schema->add_table($translatortable);
+
 		}
 
 		1;
