@@ -15,7 +15,7 @@ use File::Slurp ();
 
 use Carp;
 
-my @supportedproducers = ('PostgreSQL', 'GraphViz');
+my @supportedproducers = ('PostgreSQL', 'GraphViz', 'YAML');
 
 Getopt::Long::GetOptions(
 	"rdsschemaschemafilename=s" => \my $rdsschemaschemafilename,
@@ -81,7 +81,7 @@ my $translator = SQL::Translator->new(
 			$translatortable->add_field($primarykey);
 
 			$translatortable->add_constraint(
-				name => 'pk',
+				name => sprintf('pk_%s', $table->{name}),
 				type => 'primary_key',
 				fields => [$primarykey],
 			);
@@ -97,6 +97,7 @@ my $translator = SQL::Translator->new(
 
 				if (defined($column->{foreigntablename})) {
 					$field->is_foreign_key(1);
+					$field->data_type('integer');
 
 					$translatortable->add_constraint(
 						type => 'foreign_key',
@@ -104,7 +105,6 @@ my $translator = SQL::Translator->new(
 						fields => $field, # field in referring table
 						reference_fields => 'id',
 						reference_table => $column->{foreigntablename},
-						match_type => 'full',
 						on_delete => 'cascade',
 						on_update => '',
 					);
