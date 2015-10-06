@@ -9,12 +9,30 @@ use SQL::Translator::Producer::PostgreSQL;
 use SQL::Translator::Schema::Constraint;
 
 use JSON ();
-use JSON::Schema;
-
+use JSON::Schema ();
+use Getopt::Long ();
 use File::Slurp ();
 
-my $rdsschemaschemafilename = q{/home/ec2-user/payderbydues/schema/rds_schema_schema.json};
-my $rdsschemafilename = q{/home/ec2-user/payderbydues/schema/rds_schema.json};
+use Carp;
+
+my @supportedproducers = ('PostgreSQL', 'GraphViz');
+
+Getopt::Long::GetOptions(
+	"rdsschemaschemafilename=s" => \my $rdsschemaschemafilename,
+	"rdsschemafilename=s" => \my $rdsschemafilename,
+	"producer=s" => \my $producer,
+);
+
+$producer ||= 'PostgreSQL';
+
+Carp::confess(sprintf(
+	'producer [%s] not one of supported producers [%s]',
+	$producer,
+	join(', ', @supportedproducers),
+)) unless (grep { $producer eq $_ } @supportedproducers);
+
+$rdsschemaschemafilename ||= q{/home/ec2-user/payderbydues/schema/rds_schema_schema.json};
+$rdsschemafilename ||= q{/home/ec2-user/payderbydues/schema/rds_schema.json};
 
 my $rdsschemaschemajson = File::Slurp::read_file($rdsschemaschemafilename);
 my $rdsschemajson = File::Slurp::read_file($rdsschemafilename);
@@ -27,9 +45,10 @@ unless ($result) {
 	require Data::Dumper;
 	die 'error validating rds schema against rds schema schema: ' . Data::Dumper::Dumper([$result->errors]);
 }
+
 my $translator = SQL::Translator->new(
 	show_warnings => 1,
-	producer => 'PostgreSQL',
+	producer => $producer,
 	parser => sub {
 		my ($tr, $validatedrdsschemajson) = @_;
 
