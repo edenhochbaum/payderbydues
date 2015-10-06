@@ -31,6 +31,15 @@ Carp::confess(sprintf(
 	join(', ', @supportedproducers),
 )) unless (grep { $producer eq $_ } @supportedproducers);
 
+my $producerargs = 'GraphViz' eq $producer
+	? +{
+		bgcolor => 'lightgoldenrodyellow',
+		show_constraints => 1,
+		show_datatypes => 1,
+		edge => {dir => 'back'},
+	}
+	: {};
+
 $rdsschemaschemafilename ||= q{/home/ec2-user/payderbydues/schema/rds_schema_schema.json};
 $rdsschemafilename ||= q{/home/ec2-user/payderbydues/schema/rds_schema.json};
 
@@ -49,6 +58,7 @@ unless ($result) {
 my $translator = SQL::Translator->new(
 	show_warnings => 1,
 	producer => $producer,
+	producer_args => $producerargs,
 	parser => sub {
 		my ($tr, $validatedrdsschemajson) = @_;
 
