@@ -53,6 +53,7 @@ my $app1 = sub {
 	return $app->($env);
 };
 
+# TODO: not active!!!
 # add authentication middleware wrapper
 my $app2 = sub {
 	my $env = shift;
@@ -83,7 +84,7 @@ my $app2 = sub {
 my $app3 = sub {
 	my $env = shift;
 	$dbh = PayDerbyDues::Utilities::DBConnect::GetDBH();
-	return $app2->($env);
+	return $app1->($env);
 };
 
 # add 404 middleware wrapper
