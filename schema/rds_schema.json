@@ -36,7 +36,7 @@
 			}
 		],
 		"uniquenessconstraints": [
-			["stripe_invoiceitemid", "leaguememberid"]
+			["stripe_invoiceitemid"]
 		]
 	},
 	{
@@ -83,12 +83,12 @@
 				"foreigntablename": "league"
 			},
 			{
-				"name": "userid",
-				"foreigntablename": "users"
+				"name": "memberid",
+				"foreigntablename": "member"
 			}
 		],
 		"uniquenessconstraints": [
-			["leagueid", "userid"]
+			["leagueid", "memberid"]
 		]
 	},
 	{
@@ -140,7 +140,7 @@
 		]
 	},
 	{
-		"name": "users",
+		"name": "member",
 		"columns": [
 			{
 				"name": "email",
@@ -165,7 +165,7 @@
 		]
 	},
 	{
-		"name": "tokens",
+		"name": "token",
 		"columns": [
 			{
 				"name": "value",
@@ -176,12 +176,9 @@
 				"datatype": "timestamp without time zone"
 			},
 			{
-				"name": "userid",
-				"foreigntablename": "users"
+				"name": "memberid",
+				"foreigntablename": "member"
 			}
-		],
-		"uniquenessconstraints": [
-			["userid"]
 		]
 	}
 ]

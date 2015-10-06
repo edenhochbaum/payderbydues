@@ -1,0 +1,694 @@
+---
+schema:
+  procedures: {}
+  tables:
+    feeschedule:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - id
+          match_type: ''
+          name: pk
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - leagueid
+          match_type: full
+          name: fk_leagueid
+          on_delete: cascade
+          on_update: ''
+          options: []
+          reference_fields:
+            - id
+          reference_table: league
+          type: FOREIGN KEY
+      fields:
+        id:
+          data_type: ''
+          default_value: ~
+          is_auto_increment: 1
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: id
+          order: 1
+          size:
+            - 10
+        leagueid:
+          data_type: ''
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: leagueid
+          order: 3
+          size:
+            - 0
+        name:
+          data_type: text
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: name
+          order: 2
+          size:
+            - 0
+        value:
+          data_type: integer
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: value
+          order: 4
+          size:
+            - 0
+      indices: []
+      name: feeschedule
+      options: []
+      order: 1
+    invoiceitem:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - id
+          match_type: ''
+          name: pk
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - leaguememberid
+          match_type: full
+          name: fk_leaguememberid
+          on_delete: cascade
+          on_update: ''
+          options: []
+          reference_fields:
+            - id
+          reference_table: leaguemember
+          type: FOREIGN KEY
+      fields:
+        id:
+          data_type: ''
+          default_value: ~
+          is_auto_increment: 1
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: id
+          order: 1
+          size:
+            - 10
+        leaguememberid:
+          data_type: ''
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: leaguememberid
+          order: 4
+          size:
+            - 0
+        stripe_invoiceitemid:
+          data_type: character varying(40)
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: stripe_invoiceitemid
+          order: 3
+          size:
+            - 0
+        value:
+          data_type: integer
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: value
+          order: 2
+          size:
+            - 0
+      indices: []
+      name: invoiceitem
+      options: []
+      order: 2
+    league:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - id
+          match_type: ''
+          name: pk
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+      fields:
+        id:
+          data_type: ''
+          default_value: ~
+          is_auto_increment: 1
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: id
+          order: 1
+          size:
+            - 10
+        name:
+          data_type: text
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: name
+          order: 2
+          size:
+            - 0
+      indices: []
+      name: league
+      options: []
+      order: 3
+    leaguemember:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - id
+          match_type: ''
+          name: pk
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - leagueid
+          match_type: full
+          name: fk_leagueid
+          on_delete: cascade
+          on_update: ''
+          options: []
+          reference_fields:
+            - id
+          reference_table: league
+          type: FOREIGN KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - userid
+          match_type: full
+          name: fk_userid
+          on_delete: cascade
+          on_update: ''
+          options: []
+          reference_fields:
+            - id
+          reference_table: users
+          type: FOREIGN KEY
+      fields:
+        id:
+          data_type: ''
+          default_value: ~
+          is_auto_increment: 1
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: id
+          order: 1
+          size:
+            - 10
+        leagueid:
+          data_type: ''
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: leagueid
+          order: 2
+          size:
+            - 0
+        userid:
+          data_type: ''
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: userid
+          order: 3
+          size:
+            - 0
+      indices: []
+      name: leaguemember
+      options: []
+      order: 5
+    leaguememberrole:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - id
+          match_type: ''
+          name: pk
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - leaguememberid
+          match_type: full
+          name: fk_leaguememberid
+          on_delete: cascade
+          on_update: ''
+          options: []
+          reference_fields:
+            - id
+          reference_table: leaguemember
+          type: FOREIGN KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - roleid
+          match_type: full
+          name: fk_roleid
+          on_delete: cascade
+          on_update: ''
+          options: []
+          reference_fields:
+            - id
+          reference_table: role
+          type: FOREIGN KEY
+      fields:
+        id:
+          data_type: ''
+          default_value: ~
+          is_auto_increment: 1
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: id
+          order: 1
+          size:
+            - 10
+        leaguememberid:
+          data_type: ''
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: leaguememberid
+          order: 2
+          size:
+            - 0
+        roleid:
+          data_type: ''
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: roleid
+          order: 3
+          size:
+            - 0
+      indices: []
+      name: leaguememberrole
+      options: []
+      order: 7
+    leaguestripedata:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - id
+          match_type: ''
+          name: pk
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - leagueid
+          match_type: full
+          name: fk_leagueid
+          on_delete: cascade
+          on_update: ''
+          options: []
+          reference_fields:
+            - id
+          reference_table: league
+          type: FOREIGN KEY
+      fields:
+        id:
+          data_type: ''
+          default_value: ~
+          is_auto_increment: 1
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: id
+          order: 1
+          size:
+            - 10
+        leagueid:
+          data_type: ''
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: leagueid
+          order: 2
+          size:
+            - 0
+        stripe_account:
+          data_type: character varying(40)
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: stripe_account
+          order: 3
+          size:
+            - 0
+        stripe_publickey:
+          data_type: character varying(40)
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: stripe_publickey
+          order: 4
+          size:
+            - 0
+        stripe_secretkey:
+          data_type: character varying(40)
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: stripe_secretkey
+          order: 5
+          size:
+            - 0
+      indices: []
+      name: leaguestripedata
+      options: []
+      order: 4
+    payment:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - id
+          match_type: ''
+          name: pk
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - leaguememberid
+          match_type: full
+          name: fk_leaguememberid
+          on_delete: cascade
+          on_update: ''
+          options: []
+          reference_fields:
+            - id
+          reference_table: leaguemember
+          type: FOREIGN KEY
+      fields:
+        id:
+          data_type: ''
+          default_value: ~
+          is_auto_increment: 1
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: id
+          order: 1
+          size:
+            - 10
+        leaguememberid:
+          data_type: ''
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: leaguememberid
+          order: 2
+          size:
+            - 0
+        stripe_chargeid:
+          data_type: character varying(40)
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: stripe_chargeid
+          order: 4
+          size:
+            - 0
+        value:
+          data_type: integer
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: value
+          order: 3
+          size:
+            - 0
+      indices: []
+      name: payment
+      options: []
+      order: 8
+    role:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - id
+          match_type: ''
+          name: pk
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+      fields:
+        id:
+          data_type: ''
+          default_value: ~
+          is_auto_increment: 1
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: id
+          order: 1
+          size:
+            - 10
+        name:
+          data_type: text
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: name
+          order: 2
+          size:
+            - 0
+      indices: []
+      name: role
+      options: []
+      order: 6
+    tokens:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - id
+          match_type: ''
+          name: pk
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - userid
+          match_type: full
+          name: fk_userid
+          on_delete: cascade
+          on_update: ''
+          options: []
+          reference_fields:
+            - id
+          reference_table: users
+          type: FOREIGN KEY
+      fields:
+        expires:
+          data_type: timestamp without time zone
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: expires
+          order: 3
+          size:
+            - 0
+        id:
+          data_type: ''
+          default_value: ~
+          is_auto_increment: 1
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: id
+          order: 1
+          size:
+            - 10
+        userid:
+          data_type: ''
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: userid
+          order: 4
+          size:
+            - 0
+        value:
+          data_type: character varying(64)
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: value
+          order: 2
+          size:
+            - 0
+      indices: []
+      name: tokens
+      options: []
+      order: 10
+    users:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - id
+          match_type: ''
+          name: pk
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+      fields:
+        derbyname:
+          data_type: character varying(100)
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: derbyname
+          order: 4
+          size:
+            - 0
+        email:
+          data_type: character varying(100)
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: email
+          order: 2
+          size:
+            - 0
+        id:
+          data_type: ''
+          default_value: ~
+          is_auto_increment: 1
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: id
+          order: 1
+          size:
+            - 10
+        legalname:
+          data_type: character varying(100)
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: legalname
+          order: 3
+          size:
+            - 0
+        password:
+          data_type: character varying(64)
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: password
+          order: 5
+          size:
+            - 0
+      indices: []
+      name: users
+      options: []
+      order: 9
+  triggers: {}
+  views: {}
+translator:
+  add_drop_table: 0
+  filename: ~
+  no_comments: 0
+  parser_args: {}
+  parser_type: CODE
+  producer_args: {}
+  producer_type: SQL::Translator::Producer::YAML
+  show_warnings: 1
+  trace: 0
+  version: 0.11021
