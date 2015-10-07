@@ -17,7 +17,6 @@ use PayDerbyDues::GlobalRouter;
 
 my $router = PayDerbyDues::GlobalRouter::_GetGlobalRouter();
 my $dbh;
-my $userid;
 
 # add wrapper to engage the resource-specific logic
 my $app = sub {
@@ -38,7 +37,6 @@ my $app = sub {
 
 		return $rv;
 	}
-
 };
 
 # add global request data initialization wrapper
@@ -47,7 +45,7 @@ my $app1 = sub {
 
 	PayDerbyDues::RequestGlobalData::InitializeRequestGlobalData({
 		DBH => $dbh,
-		USERID => $userid,
+		USERID => $env->{userid},
 	});
 
 	return $app->($env);
@@ -65,10 +63,10 @@ my $app2 = sub {
 
 	# TODO: no need to re-run routing logic at each layer of middleware
 	my $match = $router->match($env) || die 'too late not to have a match';
+        $env->{userid} = eval { PayDerbyDues::Auth::Middleware::check_auth($env, $dbh, %config) };
 
-	$userid = PayDerbyDues::Auth::Middleware::check_auth($env, $dbh, %config);
 	if ($match->{requires_auth}) {
-		unless ($userid) {
+		unless (defined($env->{userid})) {
 			my $res = Plack::Response->new;
 			$res->redirect($config{unauthredirect});
 
@@ -84,7 +82,7 @@ my $app2 = sub {
 my $app3 = sub {
 	my $env = shift;
 	$dbh = PayDerbyDues::Utilities::DBConnect::GetDBH();
-	return $app1->($env);
+	return $app2->($env);
 };
 
 # add 404 middleware wrapper
