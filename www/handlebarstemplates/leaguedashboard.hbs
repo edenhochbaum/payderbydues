@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{leaguename}} Summary</title>
+  </head>
+  <body>
+    <h1>{{leaguename}}</h1>
+    {{! TODO: league logo goes here}}
+
+    <h2>League members</h2>
+    <table>
+      <thead>
+        <th>Derby name</th>
+        <th>Legal name</th>
+        <th>Dues due</th>
+      </thead>
+      <tbody>
+        {{#each members}}
+          <td>{{derbyname}}</td>
+          <td>{{legalname}}</td>
+          <td>{{amountdue}}</td> {{! TODO: style me! }}
+          <td><a href="user/{{id}}/charge">Add charge</a></td>
+        {{/each}}
+      </tbody>
+    </table>
+
+    <h2>Add members</h2>
+    When you add a league member, we will send them an email asking them to
+    create an account
+    <form action="XXX" method="POST">
+      <label> Email address <input name="email"> </label>
+      <button type="submit">Invite user</button>
+    </form>
+    
+    <h2>League info</h2> {{!TODO: make me editable}}
+    League name: {{league.name}} 
+    Stripe accountid: {{league.stripe_accountid}}
+  </body>
+</html>

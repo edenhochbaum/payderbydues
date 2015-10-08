@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use PayDerbyDues::WorkFlows::All;
+use PayDerbyDues::WorkFlows::Payment;
 use PayDerbyDues::DerbyDues;
 
 {
@@ -20,6 +21,9 @@ sub _GetGlobalRouter {
 	$GlobalRouter->connect('/arcady', { func => \&PayDerbyDues::WorkFlows::All::arcady, requires_auth => 1 });
 	$GlobalRouter->connect('/userdashboard', { func => \&PayDerbyDues::WorkFlows::All::userdashboard, requires_auth => 1});
 	$GlobalRouter->connect('/logout', { func => \&PayDerbyDues::WorkFlows::All::logout, requires_auth => 1});
+	$GlobalRouter->connect('/league/{leagueid:\d+}', { func => \&PayDerbyDues::WorkFlows::Payment::leaguedashboard, requires_auth => 1});
+	$GlobalRouter->connect('/user/{leaguememberid:\d+}/charge', { func => \&PayDerbyDues::WorkFlows::All::usercharge, requires_auth => 1});
+
 
 	# OPEN TO THE WORLD #
 	$GlobalRouter->connect('/rollout', { func => \&PayDerbyDues::WorkFlows::All::rollout, requires_auth => ''});

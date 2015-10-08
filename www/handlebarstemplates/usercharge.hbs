@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+  </head>
+  <body>
+    <h2>Charge/Credit {{leaguemember.derbyname}}
+    ({{leaguemember.legalname}})</h2>
+    {{#if chargeamount}}
+      {{! XXX: message for charge/credit  }}
+      <div class="success">Charge created for {{chargeamount}}</div>
+    {{/if}}
+    <form method='POST' action=''>
+      <div>
+        Amount: $ <input name='amount'>
+      </div>
+      <div>
+        Description <input name='description'>
+      </div>
+      <div>
+        <label>
+          <input type="radio" name="type" value="charge" checked>
+          Charge
+        </label>
+        <label> 
+          <input type="radio" name="type" value="credit">
+          Credit
+        </label>
+      </div>
+      <button type="submit">Create Charge</button>
+    </form>
+  </body>
+</html>

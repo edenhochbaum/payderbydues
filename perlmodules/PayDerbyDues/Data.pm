@@ -5,6 +5,18 @@
 
 package PayDerbyDues::Data;
 
+sub check_admin {
+    my ($dbh, $userid, $leagueid) = @_;
+
+    my ($roleid) = $dbh->selectrow_array(
+        q{select roleid from leaguemember
+          where userid = ? and leagueid = ?},
+        {}, $userid, $leagueid);
+
+    print STDERR "Roleid $roleid userid $userid leagueid $leagueid";
+    return defined $roleid and $roleid == 0;
+}
+
 # get_dues($dbh, $leaguememberid) -> { 'overdue' => int , 'due' => int }
 sub get_dues {
     my ($dbh, $leaguememberid) = @_;
