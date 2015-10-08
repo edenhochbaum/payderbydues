@@ -9,10 +9,8 @@ use File::Slurp;
 
 use PayDerbyDues::Auth::Middleware;
 use PayDerbyDues::Utilities::DBConnect;
-use PayDerbyDues::DerbyDues;
 use PayDerbyDues::RequestGlobalData;
 use PayDerbyDues::Constants;
-use PayDerbyDues::WorkFlows::All;
 use PayDerbyDues::GlobalRouter;
 
 my $router = PayDerbyDues::GlobalRouter::_GetGlobalRouter();
@@ -22,9 +20,9 @@ my $dbh;
 my $app = sub {
 	my $env = shift;
 
-	if (my $match = $router->match($env)) {
+	if ($env->{match}) {
 		my $rv = eval {
-			$match->{func}->($match, $env);
+			$env->{match}{func}->($env->{$match}, $env);
 		};
 
 		if ($@) {
@@ -51,7 +49,6 @@ my $app1 = sub {
 	return $app->($env);
 };
 
-# TODO: not active!!!
 # add authentication middleware wrapper
 my $app2 = sub {
 	my $env = shift;
@@ -61,11 +58,9 @@ my $app2 = sub {
 	    timeout_sec => 30 * 60,
 	);
 
-	# TODO: no need to re-run routing logic at each layer of middleware
-	my $match = $router->match($env) || die 'too late not to have a match';
         $env->{userid} = eval { PayDerbyDues::Auth::Middleware::check_auth($env, $dbh, %config) };
 
-	if ($match->{requires_auth}) {
+	if ($env->{match}{requires_auth}) {
 		unless (defined($env->{userid})) {
 			my $res = Plack::Response->new;
 			$res->redirect($config{unauthredirect});
@@ -102,5 +97,7 @@ my $app4 = sub {
 			]
 		];
 	}
+
+	$env->{match} = $match;
 	return $app3->($env);
 };
