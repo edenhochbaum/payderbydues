@@ -22,7 +22,7 @@ sub _clean_tokens
 {
     my ($self) = @_;
 
-    $self->{dbh}->do(qq{DELETE FROM tokens WHERE expires < datetime(now)});
+    $self->{dbh}->do(qq{DELETE FROM token WHERE expires < datetime(now)});
 }
 
 # token is just 16 bytes streamed from /dev/urandom returned in hex (so 32 hex digits)
@@ -40,7 +40,7 @@ sub _gen_token
 }
 
 # generates a token
-# adds token to tokens table for $userid, setting expiration for postgres system now() + $validity
+# adds token to token table for $userid, setting expiration for postgres system now() + $validity
 # returns the generated token
 #
 # see: http://www.postgresql.org/docs/8.0/static/functions-datetime.html
@@ -50,7 +50,7 @@ sub _set_token
 
     my $token = _gen_token();
     $self->{dbh}->do(q{
-        INSERT INTO tokens (userid, token, expires) VALUES (?, ?, now() + ?)
+        INSERT INTO token (memberid, value, expires) VALUES (?, ?, now() + ?)
     }, {}, $userid, $token, "$validity");
     
     return $token;
@@ -76,7 +76,7 @@ sub auth
     $validity //= '1 day';
 
     my $userrow = _getdbrow($self->{dbh},
-			    q{SELECT id, password FROM users WHERE email = ?},
+			    q{SELECT id, password FROM member WHERE email = ?},
 			    $user);
     die "no such user $user" unless $userrow;
 
@@ -95,9 +95,9 @@ sub check
     my ($self, $token) = @_;
 
     my $userids = $self->{dbh}->selectcol_arrayref(q{
-        SELECT users.id
-        FROM users, tokens
-        WHERE users.id = tokens.userid
+        SELECT member.id
+        FROM member, token
+        WHERE member.id = token.memberid
           AND token = ?
           AND expires >= now()
         }, {}, $token);
@@ -105,13 +105,13 @@ sub check
     return @$userids == 1 ? $userids->[0] : undef;
 }
 
-# adds a new user to users table
+# adds a new user to member table
 sub newuser
 {
     my ($self, $email, $password) = @_;
 
     my $crypted = bcrypt->crypt(text => $password, cost => 12);
-    $self->{dbh}->do(qq{INSERT INTO users (email, password) VALUES (?, ?)}, {},
+    $self->{dbh}->do(qq{INSERT INTO member (email, password) VALUES (?, ?)}, {},
                      $email, $crypted);
 }
 
@@ -119,6 +119,6 @@ sub logout
 {
     my ($self, $token) = @_;
 
-    $self->{dbh}->do(qq{DELETE FROM tokens WHERE token = ?}, {}, $token);
+    $self->{dbh}->do(qq{DELETE FROM token WHERE value = ?}, {}, $token);
 }
 1;
