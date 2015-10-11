@@ -22,7 +22,7 @@ my $app = sub {
 
 	if ($env->{match}) {
 		my $rv = eval {
-			$env->{match}{func}->($env->{$match}, $env);
+			$env->{match}{func}->($env->{match}, $env);
 		};
 
 		if ($@) {
