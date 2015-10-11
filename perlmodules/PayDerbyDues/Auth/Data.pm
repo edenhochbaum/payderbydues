@@ -98,7 +98,7 @@ sub check
         SELECT member.id
         FROM member, token
         WHERE member.id = token.memberid
-          AND token = ?
+          AND value = ?
           AND expires >= now()
         }, {}, $token);
 

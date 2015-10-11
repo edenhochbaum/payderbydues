@@ -17,10 +17,10 @@ our $user = +{
 
 sub InitializeRequestGlobalData {
 	my $args = shift;
-	va($args, [qw(DBH USERID)], []);
+	va($args, [qw(DBH MEMBERID)], []);
 
 	$PayDerbyDues::RequestGlobalData::dbh = $args->{DBH};
-	$PayDerbyDues::RequestGlobalData::user->{USERID} = $args->{USERID};
+	$PayDerbyDues::RequestGlobalData::user->{USERID} = $args->{MEMBERID};
 
 	# initialize user request global data details
 	if ($PayDerbyDues::RequestGlobalData::user->{USERID}) {
@@ -31,10 +31,10 @@ sub InitializeRequestGlobalData {
 			SELECT
 				legalname, derbyname
 			FROM
-				users
+				member
 			WHERE
 				id = ?
-		}, undef, $args->{USERID});
+		}, undef, $args->{MEMBERID});
 	}
 }
 
