@@ -19,7 +19,7 @@ if (!$email) {
 
 my $dbh = PayDerbyDues::Utilities::DBConnect::GetDBH();
 
-my $user = $dbh->selectall_arrayref('select id, email, password from users where email = ?', { Slice => {} }, $email);
+my $user = $dbh->selectall_arrayref('select id, email, password from member where email = ?', { Slice => {} }, $email);
 
 if (!$password) {
     my $bytes;
@@ -36,7 +36,7 @@ if (!@$user) {
     print STDERR "User $email not found";
     exit 1;
 } else {
-    $dbh->do(q{update users set password = ? where email = ?}, {},
+    $dbh->do(q{update member set password = ? where email = ?}, {},
              $crypted, $email);
 }
 
