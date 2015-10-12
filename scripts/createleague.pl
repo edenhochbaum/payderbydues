@@ -34,6 +34,9 @@ my $sth = $dbh->prepare(q{insert into league (name) values (?) returning id});
 $sth->execute($leaguename);
 my $leagueid = $sth->fetch()->[0];
 
-$dbh->do(q{insert into leaguemember (leagueid, memberid)
-                  values (?, ?)}, {}, $leagueid, $userid);
-
+$sth = $dbh->prepare(q{insert into leaguemember (leagueid, memberid)
+                  values (?, ?) returning id});
+$sth->execute($leagueid, $userid);
+my $leaguememberid = $sth->fetch()->[0];
+$dbh->do(q{insert into leaguememberrole (leaguememberid, roleid)
+           values (?, 0)}, {}, $leaguememberid);
