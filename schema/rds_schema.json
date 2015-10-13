@@ -11,19 +11,36 @@
 				"foreigntablename": "league"
 			},
 			{
-				"name": "value",
+				"name": "amount",
 				"datatype": "integer"
+			},
+			{
+				"name": "intervalid",
+				"foreigntablename": "interval"
+			},
+			{
+				"name": "stripe_planid",
+				"datatype": "varchar(40)"
 			}
 		],
 		"uniquenessconstraints": [
 			["name", "leagueid"]
 		]
 	},
+        {
+		"name": "interval",
+		"columns": [
+			{
+				"name": "interval",
+				"datatype": "interval"
+			}
+		]
+	},
 	{
 		"name": "invoiceitem",
 		"columns": [
 			{
-				"name": "value",
+				"name": "amount",
 				"datatype": "integer"
 			},
 			{
@@ -33,6 +50,14 @@
 			{
 				"name": "leaguememberid",
 				"foreigntablename": "leaguemember"
+			},
+			{
+				"name": "description",
+				"datatype": "text"
+			},
+			{
+				"name": "duedate",
+				"datatype": "date"
 			}
 		],
 		"uniquenessconstraints": [
@@ -85,6 +110,10 @@
 			{
 				"name": "memberid",
 				"foreigntablename": "member"
+			},
+			{
+				"name": "feescheduleid",
+				"foreigntablename": "feeschedule"
 			}
 		],
 		"uniquenessconstraints": [
@@ -127,12 +156,20 @@
 				"foreigntablename": "leaguemember"
 			},
 			{
-				"name": "value",
+				"name": "amount",
 				"datatype": "integer"
 			},
 			{
 				"name": "stripe_chargeid",
 				"datatype": "character varying(40)"
+			},
+			{
+				"name": "description",
+				"datatype": "text"
+			},
+			{
+				"name": "date",
+				"datatype": "date"
 			}
 		],
 		"uniquenessconstraints": [
