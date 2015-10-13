@@ -1,0 +1,24 @@
+PATH=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/aws/bin:/home/ec2-user/bin:/opt/aws/bin
+LANG=en_US.UTF-8
+MAILTO=info@payderbydues.com
+
+# stripe environment
+STRIPE_LIVE_KEY=sk_live_8ZIrKpY3H0I7hBbUUpoyWzEH
+STRIPE_LIVE_PUBKEY=pk_live_9cIbwZIortwXa88JEre4xggc
+STRIPE_TEST_PUBKEY=pk_test_oLIm1R9BjDo6ymTGBemqbK1A
+STRIPE_TEST_KEY=sk_test_8O5Gp4CY3grgclUrID3PX3N1
+
+# perl environment
+PERL5LIB=/home/ec2-user/perl5/lib/perl5/:/home/ec2-user/perl5/lib/perl5/x86_64-linux-thread-multi/:/home/ec2-user/payderbydues/perlmodules/
+
+# DB environment
+DBPASSWORD=Picasso7
+DBNAME=payderbydues
+DBUSERNAME=ehochbaum
+DBHOST=foxtrot.cdcnwhesdbho.us-west-2.rds.amazonaws.com
+DBTESTHOST=foxtest.cdcnwhesdbho.us-west-2.rds.amazonaws.com
+
+# assorted environment
+PAYDERBYDUESHOME=/home/ec2-user/payderbydues
+
+* * * * * /bin/echo hello >> /tmp/foo.txt
