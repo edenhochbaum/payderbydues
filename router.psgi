@@ -22,7 +22,7 @@ my $app = sub {
 
 	if ($env->{match}) {
 		my $rv = eval {
-			$env->{match}{func}->($env->{$match}, $env);
+			$env->{match}{func}->($env->{match}, $env);
 		};
 
 		if ($@) {
@@ -43,7 +43,7 @@ my $app1 = sub {
 
 	PayDerbyDues::RequestGlobalData::InitializeRequestGlobalData({
 		DBH => $dbh,
-		USERID => $env->{userid},
+		MEMBERID => $env->{memberid},
 	});
 
 	return $app->($env);
@@ -58,10 +58,10 @@ my $app2 = sub {
 	    timeout_sec => 30 * 60,
 	);
 
-        $env->{userid} = eval { PayDerbyDues::Auth::Middleware::check_auth($env, $dbh, %config) };
+        $env->{memberid} = eval { PayDerbyDues::Auth::Middleware::check_auth($env, $dbh, %config) };
 
 	if ($env->{match}{requires_auth}) {
-		unless (defined($env->{userid})) {
+		unless (defined($env->{memberid})) {
 			my $res = Plack::Response->new;
 			$res->redirect($config{unauthredirect});
 

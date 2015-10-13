@@ -1,4 +1,4 @@
-#!/usr/bin/env/perl
+#!/usr/bin/env perl
 use strict;
 use warnings;
 
@@ -13,11 +13,11 @@ GetOptions('league=s' => \$league,
            'name=s' => \$name);
 
 if (!$email) {
-    print 'Usage: adduser.pl --email email [--league id] [--name name] [--password pw]\n';
+    print 'Usage: createuser.pl --email email [--league id] [--name name] [--password pw]\n';
     exit 1;
 }
 my $dbh = PayDerbyDues::Utilities::DBConnect::GetDBH;
-my $sth = $dbh->prepare('insert into users (email, legalname) values (?, ?) returning id');
+my $sth = $dbh->prepare('insert into member (email, legalname) values (?, ?) returning id');
 $sth->execute($email, $name);
 my $userid = $sth->fetch()->[0];
 
@@ -25,7 +25,7 @@ system('./pwreset.pl', '--email', $email,
        $password ? ('--password', $password) : ());
 
 if ($league) {
-    $dbh->execute('insert into leagemember (leagueid, userid) values (?, ?)',
+    $dbh->execute('insert into leagemember (leagueid, memberid) values (?, ?)',
                   $league, $userid);
 }
 

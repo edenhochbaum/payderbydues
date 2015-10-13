@@ -19,7 +19,7 @@ if (!$adminemail || !$leaguename) {
 
 my $dbh = PayDerbyDues::Utilities::DBConnect::GetDBH;
 
-my $admins = $dbh->selectcol_arrayref('select id from users where email = ?',
+my $admins = $dbh->selectcol_arrayref('select id from member where email = ?',
                                       {}, $adminemail);
 my $userid;
 
@@ -34,6 +34,9 @@ my $sth = $dbh->prepare(q{insert into league (name) values (?) returning id});
 $sth->execute($leaguename);
 my $leagueid = $sth->fetch()->[0];
 
-$dbh->do(q{insert into leaguemember (leagueid, userid, roleid)
-                  values (?, ?, ?)}, {}, $leagueid, $userid, 0);
-
+$sth = $dbh->prepare(q{insert into leaguemember (leagueid, memberid)
+                  values (?, ?) returning id});
+$sth->execute($leagueid, $userid);
+my $leaguememberid = $sth->fetch()->[0];
+$dbh->do(q{insert into leaguememberrole (leaguememberid, roleid)
+           values (?, 0)}, {}, $leaguememberid);
