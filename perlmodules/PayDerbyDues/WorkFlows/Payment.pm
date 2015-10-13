@@ -29,6 +29,7 @@ sub leaguedashboard {
     for my $member (@$leaguemembers) {
         my $dues = PayDerbyDues::Data::get_dues($dbh, $member->{id});
         $member->{amountdue} = _format_money($dues->{due});
+        $member->{chargeurl} = "/user/$member->{id}/charge"; # TODO: write R()
     }
     
     return PayDerbyDues::View::render('leaguedashboard', {
@@ -66,9 +67,9 @@ sub usercharge {
     
     if (!PayDerbyDues::Data::check_admin(
              $dbh,
-             $PayDerbyDues::RequestGlobalData::user{USERID},
+             $PayDerbyDues::RequestGlobalData::user->{USERID},
              $leagueid)) {
-        return [403, {}, "You need to be an admin to see this page"];
+        return [403, [], ["You need to be an admin to see this page"]];
     }
 
     if ($req->method eq 'POST') {

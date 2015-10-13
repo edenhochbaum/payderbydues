@@ -22,7 +22,7 @@ sub _GetGlobalRouter {
 	$GlobalRouter->connect('/userdashboard', { func => \&PayDerbyDues::WorkFlows::All::userdashboard, requires_auth => 1});
 	$GlobalRouter->connect('/logout', { func => \&PayDerbyDues::WorkFlows::All::logout, requires_auth => 1});
 	$GlobalRouter->connect('/league/{leagueid:\d+}', { func => \&PayDerbyDues::WorkFlows::Payment::leaguedashboard, requires_auth => 1});
-	$GlobalRouter->connect('/user/{leaguememberid:\d+}/charge', { func => \&PayDerbyDues::WorkFlows::All::usercharge, requires_auth => 1});
+	$GlobalRouter->connect('/user/{leaguememberid:\d+}/charge', { func => \&PayDerbyDues::WorkFlows::Payment::usercharge, requires_auth => 1});
 
 
 	# OPEN TO THE WORLD #

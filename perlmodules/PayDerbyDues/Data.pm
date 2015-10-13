@@ -6,14 +6,13 @@
 package PayDerbyDues::Data;
 
 sub check_admin {
-    my ($dbh, $userid, $leagueid) = @_;
+    my ($dbh, $memberid, $leagueid) = @_;
 
     my ($roleid) = $dbh->selectrow_array(
-        q{select roleid from leaguemember
-          where userid = ? and leagueid = ?},
-        {}, $userid, $leagueid);
+        q{select roleid from leaguemember, leaguememberrole
+          where memberid = ? and leagueid = ? and roleid = 0},
+        {}, $memberid, $leagueid);
 
-    print STDERR "Roleid $roleid userid $userid leagueid $leagueid";
     return defined $roleid and $roleid == 0;
 }
 
@@ -56,8 +55,8 @@ sub get_league_members {
 
     $dbh->selectall_arrayref(q{
         select leaguemember.id id, legalname, derbyname, email
-        from leaguemember, users
-        where users.id = leaguemember.userid
+        from leaguemember, member
+        where member.id = leaguemember.memberid
           and leaguemember.leagueid = ?}, { Slice => {} }, $leagueid);
 }
 
@@ -74,8 +73,8 @@ sub get_leaguemember {
 
     $dbh->selectrow_hashref(q{
         select leaguemember.id id, legalname, derbyname, email, leagueid
-        from leaguemember, users
-        where users.id = leaguemember.userid
+        from leaguemember, member
+        where member.id = leaguemember.memberid
           and leaguemember.id = ?}, {}, $leaguememberid);
 }
 
