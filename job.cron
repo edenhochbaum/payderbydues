@@ -21,4 +21,5 @@ DBTESTHOST=foxtest.cdcnwhesdbho.us-west-2.rds.amazonaws.com
 # assorted environment
 PAYDERBYDUESHOME=/home/ec2-user/payderbydues
 
-* * * * * /bin/echo hello >> /tmp/foo.txt
+# append hello to /tmp/foo.txt every minute
+# * * * * * /bin/echo hello >> /tmp/foo.txt
