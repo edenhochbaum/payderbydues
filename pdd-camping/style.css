@@ -1,0 +1,31 @@
+.errordiv {
+   color: red;
+   border-width: 1px;
+   border-color: red;
+   background-color: #f99;
+}
+
+.successdiv {
+   color: #090;
+   border-width: 1px;
+   border-color: #090;
+   background-color: #9f9;
+}
+
+nav {
+   background-color: #559;
+   padding: 10px;
+}
+
+.navitem {
+   padding: 10px;
+}
+
+nav a {
+   text-decoration: none;
+   color: white;
+}
+
+nav a:hover {
+   text-decoration: underline;
+}
