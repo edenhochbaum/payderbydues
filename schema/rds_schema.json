@@ -169,7 +169,7 @@
 			},
 			{
 				"name": "date",
-				"datatype": "date"
+				"datatype": "timestamp"
 			}
 		],
 		"uniquenessconstraints": [
