@@ -16,7 +16,6 @@ module PayDerbyDues::Views
             pastdue, due = $pdd.dues_due(member['id']) #XXX: to controller/data layer
             td format_money(due)
             td do
-              puts @leagueid, member['memberid']
               a "Add a charge",
                 :href => R(UserCharge, @leagueid, member['memberid'])
             end
@@ -109,6 +108,26 @@ module PayDerbyDues::Views
       end
       button "Create Charge", :type => 'submit'
     end
+    paymenthistory
+  end
+
+  def paymenthistory
+    table do
+      thead do
+        th "Date"
+        th "Charge amount"
+        th "Credit amount"
+        th "Description"
+      end
+      @historyitems.each do |item|
+        tr do
+          td item['date'].strftime('%Y-%m-%d')
+          td item['chargeamount'] ? format_money(item['chargeamount']) : '-'
+          td item['creditamount'] ? format_money(item['creditamount']) : '-'
+          td item['description']
+        end
+      end
+    end
   end
   
   def userdashboard
@@ -119,8 +138,8 @@ module PayDerbyDues::Views
     else
       div format_money(@dues[1]), :class => 'dues'
     end
-
     paymentform
+    paymenthistory
   end
 
   def paymentresult

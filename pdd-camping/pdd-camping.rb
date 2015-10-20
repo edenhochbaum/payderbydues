@@ -14,15 +14,15 @@ module PayDerbyDues::Controllers
     end
     def post(leagueid)
       check_auth(true, leagueid)
-      # update league data
+      # TODO: update league data
     end
   end
   class LeagueNAdduser
     def post(leagueid)
       check_auth!(true, leagueid)
-      # add user
+      # TODO: add user
 
-      # redirect -> leagueN
+      redirect R(League, leagueid)
     end
   end
   class User < R '/league/(\d+)/member'
@@ -30,7 +30,7 @@ module PayDerbyDues::Controllers
       check_auth!(false, leagueid)
       @leaguename = $pdd.get_leaguename(leagueid)
       @dues = $pdd.dues_due(@memberinfo['id'])
-
+      @historyitems = $pdd.get_history(@memberinfo['id'])
       render :userdashboard
     end
     def post
@@ -41,7 +41,13 @@ module PayDerbyDues::Controllers
   class Pay < R '/league/(\d+)/pay'
     def post
       @memberid = check_auth!(false, leagueid)
-      @amount = parse_money(@input['amount']) # XXX: handle errors!!!
+      begin
+        @amount = parse_money(@input['amount']) # XXX: handle errors!!!
+      rescue => e
+        @status = :user_error
+        @details = e
+        render :paymentresult
+      end
       begin
         charge = Stripe::Charge.create(
           :amount => parse_money(@input['amount']),
@@ -74,22 +80,24 @@ module PayDerbyDues::Controllers
       check_auth!(true, leagueid)
       @leaguename = $pdd.get_leaguename(leagueid)
       @title = "Create charge"
+      @historyitems = $pdd.get_history(@memberinfo['id'])
+
       render :usercharge
     end
-    # XXX: parse money
+
     def post(leagueid, userid)
       check_auth!(true, leagueid)
       if @input['type'] == 'charge'
-        $pdd.add_invoiceitem(@memberinfo['id'], @input['amount'],
+        $pdd.add_invoiceitem(@memberinfo['id'], parse_money(@input['amount']),
                              @input['description'])
-        @chargeamount = [invoice.amount]
       elsif @input['type'] == 'credit'
-        $pdd.pay(@memberinfo['id'], @input['amount'],
+        $pdd.pay(@memberinfo['id'], parse_money(@input['amount']),
                  @input['description'])
       else  
         raise Exception.new('Unknown charge/credit type')
       end
-      redirect R(LeagueN, @leagueid)
+
+      redirect R(UserCharge, leagueid, userid)
     end
   end
   
@@ -138,7 +146,10 @@ module PayDerbyDues::Helpers
     end
     @leagueid = league.to_i
     @memberinfo = $pdd.get_leaguemember(@leagueid, @memberid)
-    # XXX: check that memberinfo is valid
+    if !@memberinfo
+      r(403, "You are not a member of this league!")
+      throw :halt
+    end
     if admin and not $pdd.check_league_admin(@memberid, league)
       r(403, "You are not an admin!")
       throw :halt

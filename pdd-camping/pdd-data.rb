@@ -48,6 +48,17 @@ module PayDerbyDues
       balance = past + future - paid
       return [overdue, balance]
     end
+    def get_history(leaguememberid)
+      historyquery = %q{
+        select duedate date, amount chargeamount,
+               null creditamount, description
+        from invoiceitem where leaguememberid = ?
+      union all
+        select date, null chargeamount, amount creditamount, description
+        from payment where leaguememberid = ?}
+      @dbh.select_all("select date, chargeamount, creditamount, description from (#{historyquery}) hq order by date desc",
+                      leaguememberid, leaguememberid)
+    end
 
     def add_invoiceitem(leaguememberid, amount, description)
       @dbh.do(%q{insert into invoiceitem
@@ -58,8 +69,8 @@ module PayDerbyDues
 
     def pay(leaguememberid, amount, description, stripe_chargeid = nil)
       @dbh.do(%q{insert into payment
-                (leaguememberid, amount, description, stripe_chargeid)
-                 values (?, ?, ?, ?)},
+                (leaguememberid, amount, description, date, stripe_chargeid)
+                 values (?, ?, ?, now(), ?)},
               leaguememberid, amount, description, stripe_chargeid)
     end
     
