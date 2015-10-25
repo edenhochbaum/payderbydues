@@ -7,61 +7,87 @@ require_relative 'pdd-views'
 module PayDerbyDues::Controllers
   class LeagueN
     def get(leagueid)
-      check_auth!(true, leagueid)
-      @leaguename = $pdd.get_leaguename(leagueid)
+      check_auth!(leagueid, true)
       @members = $pdd.members(leagueid)
       render :leaguedashboard
     end
     def post(leagueid)
-      check_auth(true, leagueid)
+      check_auth!(leagueid, true)
       # TODO: update league data
     end
   end
   class LeagueNAdduser
+    def get(leagueid)
+      check_auth!(leagueid, true)
+      render :adduser
+    end
     def post(leagueid)
-      check_auth!(true, leagueid)
-      # TODO: add user
+      check_auth!(leagueid, true)
+      begin
+        memberid = $pdd.add_member(@input['email'], @input['name'])
+        leaguememberid = $pdd.add_leaguemember(@leagueid, memberid)
+        token = $pdd.add_token(memberid, '1 week')
 
-      redirect R(League, leagueid)
+        send_email(@input['email'], @input['name'], token)
+        @addeduser = { :email => @input['email'], :name => @input['name'] }
+      rescue => e
+        @error = e
+        # TODO: actually handle errors (duplicate emails etc.)
+        raise e
+      end
+      render :adduser
     end
   end
   class User < R '/league/(\d+)/member'
     def get(leagueid)
-      check_auth!(false, leagueid)
-      @leaguename = $pdd.get_leaguename(leagueid)
+      check_auth!(leagueid)
       @dues = $pdd.dues_due(@memberinfo['id'])
       @historyitems = $pdd.get_history(@memberinfo['id'])
       render :userdashboard
     end
     def post
+      check_auth!(leagueid)
+      if @input['password'] and @input['password2']
+        # TODO: check errors, also case where password is not being set.
+        if @input['password'] == @input['password2']
+          $pdd.update_password(@memberid, @input['password'])
+        end
+      end
+      $pdd.update_member(@memberid, hashgrep(@input, 'legalname', 'derbyname'))
       # update user info
     end
   end
   
   class Pay < R '/league/(\d+)/pay'
-    def post
-      @memberid = check_auth!(false, leagueid)
+    def get(leagueid)
+      check_auth!(leagueid)
+      @dues = $pdd.dues_due(@memberinfo['id'])
+      render :pay
+    end
+
+    def post(leagueid)
+      check_auth!(leagueid)
       begin
         @amount = parse_money(@input['amount']) # XXX: handle errors!!!
       rescue => e
-        @status = :user_error
+        @paystatus = :user_error
         @details = e
         render :paymentresult
       end
       begin
         charge = Stripe::Charge.create(
-          :amount => parse_money(@input['amount']),
+          :amount => @input['amount'], #parse_money(@input['amount']),
           :currency => 'USD',
           :source => @input['stripeToken']
           # TODO: :destination => @league['stripe_accountid']
           # :application_fee => ...
         )
-        $pdd.pay(@memberid, @input['amount'])
-        @status = :success
+        $pdd.pay(@memberinfo['id'], charge.amount, 'Paid dues', charge.id)
+        @paystatus = :success
         @details = charge
         render :paymentresult
       rescue Stripe::StripeError => e
-        @status = :stripe_error
+        @paystatus = :stripe_error
         @details = e
         render :paymentresult
       end
@@ -77,8 +103,7 @@ module PayDerbyDues::Controllers
   
   class UserCharge < R '/league/(\d+)/user/(\d+)/charge'
     def get(leagueid, userid)
-      check_auth!(true, leagueid)
-      @leaguename = $pdd.get_leaguename(leagueid)
+      check_auth!(leagueid, true)
       @title = "Create charge"
       @historyitems = $pdd.get_history(@memberinfo['id'])
 
@@ -86,7 +111,7 @@ module PayDerbyDues::Controllers
     end
 
     def post(leagueid, userid)
-      check_auth!(true, leagueid)
+      check_auth!(leagueid, true)
       if @input['type'] == 'charge'
         $pdd.add_invoiceitem(@memberinfo['id'], parse_money(@input['amount']),
                              @input['description'])
@@ -113,6 +138,31 @@ module PayDerbyDues::Controllers
       r(200, "Success")
     end
   end
+  class Newuser
+    def get()
+      memberid = $pdd.check_token(@input['token'])
+      if !memberid
+        r(403, "Your signup link has expired. Please contact your league admin for a new one")
+        throw :halt
+      end
+      @cookies['token'] = $pdd.add_token(memberid)
+      leaguememberships = $pdd.leaguememberships_memberid(memberid)
+      if leaguememberships.length != 1
+        r(500, "TODO: multiple league membership")
+        throw :halt
+      end
+      @leagueid = leaguememberships[0][0].to_i
+      @memberinfo = $pdd.get_leaguemember(@leagueid, memberid)
+      @nonavbar = true
+      render :newuser
+    end
+    def post()
+      check_auth!(@input['leagueid'])
+      $pdd.update_memberinfo(@memberid, @input.select {|k,v| ['legalname', 'derbyname'].include? k })
+      redirect R(User, @leagueid)
+    end
+  end
+
   class Login
     def post
       token = $pdd.login(input.username, input.password)
@@ -135,10 +185,18 @@ module PayDerbyDues::Controllers
       end
     end
   end
+
+  class Logout
+    def get
+      $pdd.destroy_token(@cookies['token'])
+      @cookies.delete('token')
+      redirect R(Index)
+    end
+  end
 end
 
 module PayDerbyDues::Helpers
-  def check_auth!(admin = false, league = nil)
+  def check_auth!(league, admin = false)
     @memberid = $pdd.check_token(@cookies['token'])
     if !@memberid
       redirect PayDerbyDues::Controllers::Index
@@ -150,6 +208,7 @@ module PayDerbyDues::Helpers
       r(403, "You are not a member of this league!")
       throw :halt
     end
+    @leaguename = $pdd.get_leaguename(@leagueid)
     if admin and not $pdd.check_league_admin(@memberid, league)
       r(403, "You are not an admin!")
       throw :halt
@@ -161,6 +220,18 @@ module PayDerbyDues::Helpers
   def parse_money(amount)
     amount =~ /^\s*(\d+)(?:\.(\d{2}))?\s*/ or raise Exception.new("Couldn't parse money")
     return $1.to_i * 100 + $2.to_i
+  end
+  def send_email(email, name, token)
+    url = URL(Newuser, { :token => token })
+    status = system('welcome_email.pl',
+                    '--email', email,
+                    '--name', name,
+                    '--link', url.to_s,
+                    '--league', @leaguename,
+                   '--invitedby', @memberinfo['legalname'])
+    if !status
+      raise Exception.new("Couldn't send email #{$?}")
+    end
   end
   include PaymentForm
 end

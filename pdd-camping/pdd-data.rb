@@ -7,9 +7,6 @@ module PayDerbyDues
     def initialize()
       @dbh = DBI.connect("DBI:Pg:payderbydues", ENV['DBUSERNAME'], ENV['DBPASSWORD'])
     end
-    def getleaguename(leagueid)
-      @dbh.select_one('select name from league where id = ?', leagueid)[0]
-    end
 
     def members(leagueid)
       @dbh.select_all(%q{select leaguemember.id id, legalname, derbyname,
@@ -19,13 +16,26 @@ module PayDerbyDues
                            and leaguemember.memberid = member.id}, leagueid)
     end
 
-
     def get_leaguemember(leagueid, memberid)
       @dbh.select_one(%q{select leaguemember.id id, legalname, derbyname, email,
                                 member.id memberid, feescheduleid
                          from leaguemember, member
-                         where leaguemember.leagueid = ?
+                         where leaguemember.memberid = member.id
+                           and leaguemember.leagueid = ?
                            and leaguemember.memberid = ?}, leagueid, memberid)
+    end
+    def _insert_with_id(sql, *binds)
+      stmt = @dbh.prepare(sql)
+      stmt.execute(*binds)
+      return stmt.fetch()[0]
+    end
+    def add_member(email, name)
+      _insert_with_id(%q{insert into member (email, legalname)
+                         values (?, ?) returning id}, email, name)
+    end
+    def add_leaguemember(leagueid, memberid)
+      _insert_with_id(%q{insert into leaguemember (leagueid, memberid)
+                         values (?, ?) returning id}, leagueid, memberid)
     end
 
     def get_leaguename(leagueid)
@@ -73,6 +83,22 @@ module PayDerbyDues
                  values (?, ?, ?, now(), ?)},
               leaguememberid, amount, description, stripe_chargeid)
     end
+
+    def update_password(memberid, password)
+      crypted = BCrypt::Password.create(password, :cost => 12).to_s
+      @dbh.do(%q{update member set password = ? where id = ?},
+              crypted, memberid)
+    end
+    def crud_update(table, id, updates)
+      sets = updates.keys.map { |k| k.to_s + " = ?" }.join(',')
+      puts "#{sets.inspect} #{updates.inspect}"
+      @dbh.do(%Q{update #{table} set #{sets} where id = #{id}},
+              *updates.values)
+    end
+    # TODO: meta-magicalize this
+    def update_memberinfo(memberid, updates)
+      crud_update('member', memberid, updates)
+    end
     
     def check_token(token)
       @dbh.select_one(%q{select memberid from token
@@ -101,18 +127,33 @@ module PayDerbyDues
                            and leaguemember.memberid = member.id},
                       email)
     end
-    
+
+    def leaguememberships_memberid(email)
+      @dbh.select_all(%q{select leaguemember.leagueid
+                         from leaguemember
+                         where leaguemember.memberid = ?},
+                      email)
+    end
+
+    def add_token(memberid, validity = '1 day')
+      token = _gen_token()
+      @dbh.do('insert into token (memberid, value, expires)
+               values (?, ?, now() + ?)',
+               memberid, token, validity)
+      return token
+    end
+
+    def destroy_token(token)
+      @dbh.do('delete from token where value = ?', token)
+    end
+
     def login(username, password)
       (memberid, hash) = @dbh.select_one(%q{select id, password from member
                                        where email = ?}, username)
       return nil unless memberid
       pw = BCrypt::Password.new(hash)
       if pw == password
-        token = _gen_token()
-        @dbh.do('insert into token (memberid, value, expires)
-                 values (?, ?, now() + ?)',
-               memberid, token, '1 day')
-        return token
+        return add_token(memberid)
       end
       return nil
     end

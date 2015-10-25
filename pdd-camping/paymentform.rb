@@ -1,5 +1,5 @@
 module PaymentForm
-  def paymentform
+  def paymentform(amount)
     stripecode = %q{
 Stripe.setPublishableKey('pk_test_oLIm1R9BjDo6ymTGBemqbK1A');
 jQuery(function($) {
@@ -28,8 +28,9 @@ jQuery(function($) {
     script :src => 'http://code.jquery.com/jquery-2.1.3.js', :type => 'text/javascript'
     script { stripecode }
 
-    form.payment! do
+    form.payment! :method => 'POST' do
       span.paymenterrors!
+      input :type => 'hidden', :name => 'amount', :value => amount
       div :class => 'form-row' do
         label do
           text "Credit card number"
@@ -44,7 +45,7 @@ jQuery(function($) {
       end
       div :class => 'form-row' do
         label do
-          text "Credit card number"
+          text "Expiration date"
           input :type => 'text', :size => '2', :'data-stripe' => 'exp-month'
           input :type => 'text', :size => '4', :'data-stripe' => 'exp-year'
         end
