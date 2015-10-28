@@ -3,17 +3,14 @@ module PayDerbyDues::Views
   def membertable
     table do
       thead do
-        th "Derby name"
-        th "Legal name"
-        th "Dues due"
-        th "add a charge"
+        th "Derby name"; th "Legal name"; th "Dues due"; th "Add a charge"
       end
       tbody do
         @members.each do |member|
           tr do
+            pastdue, due = $pdd.dues_due(member['id']) #XXX: to controller/data layer
             td member['derbyname']
             td member['legalname']
-            pastdue, due = $pdd.dues_due(member['id']) #XXX: to controller/data layer
             td format_money(due)
             td do
               a "Add a charge",
@@ -31,7 +28,6 @@ module PayDerbyDues::Views
     a "Add members", :href => R(LeagueNAdduser, @leagueid)
     h2 "League account information"
     form :method => 'POST', :action => R(LeagueN, @leagueid) do
-      # TODO: we want some javascript to only post stuff that was touched
       # TODO: add crudupdate stuffs here.
     end
   end
@@ -102,25 +98,6 @@ module PayDerbyDues::Views
     paymenthistory(@historyitems)
   end
 
-  def paymenthistory(history)
-    table do
-      thead do
-        th "Date"
-        th "Charge amount"
-        th "Credit amount"
-        th "Description"
-      end
-      history.each do |item|
-        tr do
-          td item['date'].strftime('%Y-%m-%d')
-          td item['chargeamount'] ? format_money(item['chargeamount']) : '-'
-          td item['creditamount'] ? format_money(item['creditamount']) : '-'
-          td item['description']
-        end
-      end
-    end
-  end
-
   def pay
     h3 "dues due:"
     if @dues[0] > 0
@@ -129,7 +106,6 @@ module PayDerbyDues::Views
     else
       div format_money(@dues[1]), :class => 'dues'
     end
-
     paymentform(@dues[0])
   end
   
@@ -146,7 +122,7 @@ module PayDerbyDues::Views
         span "Pay dues", :class => 'paybutton'
       end
     end
-    paymenthistory
+    paymenthistory(@historyitems)
   end
 
   def paymentresult
@@ -163,25 +139,11 @@ module PayDerbyDues::Views
     end
   end
 
-  def crudfields(*fields)
-    validfields = [:name, :value, :type]
-    fields.each do |f|
-      inputfields = f.select { |k,v| validfields.include? k }
-      div do
-        label do
-          text f[:label]
-          input inputfields
-        end
-      end
-    end
-  end
-
   def newuser
-    h3 "Update profile"
-    # TODO: statusdiv
+    h3 "Please update your information"
     form :action => R(Newuser), :method => 'POST' do
       crudfields(
-        # include old token so successful POST can destroy it
+        # TODO: include old token so successful POST can destroy it
         {
           :type => 'hidden',
           :name => 'leagueid',
@@ -203,6 +165,7 @@ module PayDerbyDues::Views
       button "Save", :type => 'submit'
     end
   end
+
   def adduser
     if @addeduser
       div :class => 'successdiv' do
