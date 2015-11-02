@@ -3,7 +3,7 @@ module PayDerbyDues::Views
   def membertable
     table do
       thead do
-        th "Derby name"; th "Legal name"; th "Dues due"; th "Add a charge"
+        th "Derby name"; th "Legal name"; th "Dues due"; th "Member type"
       end
       tbody do
         @members.each do |member|
@@ -12,6 +12,7 @@ module PayDerbyDues::Views
             td member['derbyname']
             td member['legalname']
             td format_money(due)
+            td member['feeschedulename']
             td do
               a "Add a charge",
                 :href => R(UserCharge, @leagueid, member['memberid'])
@@ -22,10 +23,65 @@ module PayDerbyDues::Views
     end
   end
 
+  def feeschedules
+    table do
+      @feeschedules.each do |feeschedule|
+        tr do
+          td feeschedule['name']
+          td format_money(feeschedule['amount'])
+          td format_interval(feeschedule['intervalid'])
+          td { a "Edit", :href => R(Feeschedule, feeschedule['id']) }
+          td do
+            form :action => R(Feeschedule, feeschedule['id']),
+                 :method => 'post' do
+              input :type => 'hidden', :name => 'operation', :value => 'delete'
+              button 'Delete'
+            end
+          end
+        end
+      end
+      tr do
+        td :colspan => 99 do
+          a "Add new fee schedule", :href => R(FeescheduleNew, @leagueid)
+        end
+      end
+    end
+  end
+
+  def feeschedule
+    # TODO: null feeschedule in new case
+    if @feeschedule
+      action = R(Feeschedule, @feeschedule['id'])
+      name = @feeschedule['name']
+      amount = format_money(@feeschedule['amount'])
+      selected = @feeschedule['intervalid']
+    else
+      action = R(FeescheduleNew, @leagueid)
+      name = ''
+      amount = 0
+      selected = nil
+    end
+    form :action => action, :method => 'POST' do
+      crudfields(
+        { :label => 'Name', :name => 'name', :value => name },
+        { :label => 'Amount', :name => 'amount', :value => amount },
+      )
+      interval_options('intervalid', selected)
+      button "Save", :type => 'submit'
+    end
+    if @feeschedule
+      form :action => R(Feeschedule, @feeschedule['id']), :method => 'POST' do
+        input :type => 'hidden', :name => 'operation', :value => 'delete'
+        button 'Delete', :type => 'submit'
+      end
+    end
+  end
+
   def leaguedashboard
     h2 "League members:"
     membertable
     a "Add members", :href => R(LeagueNAdduser, @leagueid)
+    div { a "Membership levels", :href => R(Feeschedules, @leagueid) }
     h2 "League account information"
     form :method => 'POST', :action => R(LeagueN, @leagueid) do
       # TODO: add crudupdate stuffs here.
@@ -200,6 +256,7 @@ module PayDerbyDues::Views
         if @leagueid && !@nonavbar
           navbar
         end
+        # TODO: successdiv/errordiv
         self << yield
       end
     end

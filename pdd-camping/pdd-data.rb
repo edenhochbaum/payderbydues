@@ -1,3 +1,11 @@
+# pdd-data - a simplistic "data layer" for PayDerbyDues
+# Naming conventions:
+#  get_foo: gets a row from the foo table
+#  add_foo: adds a row to the foo table
+#  update_foo: updates a row in the foo table. Takes an id and a hash
+#    of updates to apply.
+# Also includes functions to deal with auth tokens, since those live
+# in the database.
 require 'bcrypt'
 require 'date'
 require 'dbi'
@@ -10,10 +18,13 @@ module PayDerbyDues
 
     def members(leagueid)
       @dbh.select_all(%q{select leaguemember.id id, legalname, derbyname,
-                                email, member.id memberid, feescheduleid
-                         from leaguemember, member
+                                email, member.id memberid,
+                                feeschedule.name feeschedulename
+                         from leaguemember, member, feeschedule
                          where leaguemember.leagueid = ?
-                           and leaguemember.memberid = member.id}, leagueid)
+                           and leaguemember.memberid = member.id
+                           and leaguemember.feescheduleid = feeschedule.id},
+                      leagueid)
     end
 
     def get_leaguemember(leagueid, memberid)
@@ -34,12 +45,33 @@ module PayDerbyDues
                          values (?, ?) returning id}, email, name)
     end
     def add_leaguemember(leagueid, memberid)
-      _insert_with_id(%q{insert into leaguemember (leagueid, memberid)
-                         values (?, ?) returning id}, leagueid, memberid)
+      _insert_with_id(%q{insert into leaguemember
+                        (leagueid, memberid, feescheduleid)
+                         values (?, ?, 1) returning id}, leagueid, memberid)
     end
 
     def get_leaguename(leagueid)
       @dbh.select_one(%q{select name from league where id = ?}, leagueid)[0]
+    end
+
+    def get_feeschedules(leagueid)
+      @dbh.select_all(%{select * from feeschedule where leagueid = ?},
+                      leagueid)
+    end
+
+    def get_feeschedule(feescheduleid)
+      @dbh.select_one(%q{select * from feeschedule where id = ?}, feescheduleid)
+    end
+
+    def add_feeschedule(leagueid, name, interval, amount)
+      _insert_with_id(%q{insert into feeschedule (leagueid, name,
+                                              intervalid, amount)
+                         values (?, ?, ?, ?) returning id},
+                      leagueid, name, interval, amount)
+    end
+
+    def delete_feeschedule(feescheduleid)
+      @dbh.do(%{delete from feeschedule where id = ?}, feescheduleid)
     end
 
     def dues_due(leaguememberid)
@@ -91,13 +123,16 @@ module PayDerbyDues
     end
     def crud_update(table, id, updates)
       sets = updates.keys.map { |k| k.to_s + " = ?" }.join(',')
-      puts "#{sets.inspect} #{updates.inspect}"
       @dbh.do(%Q{update #{table} set #{sets} where id = #{id}},
               *updates.values)
     end
     # TODO: meta-magicalize this
     def update_memberinfo(memberid, updates)
       crud_update('member', memberid, updates)
+    end
+
+    def update_feeschedule(id, updates)
+      crud_update('feeschedule', id, updates)
     end
     
     def check_token(token)

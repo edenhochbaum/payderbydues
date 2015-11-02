@@ -87,6 +87,52 @@ module PayDerbyDues::Controllers
     end
   end
 
+  class Feeschedules < R '/league/(\d+)/feeschedules'
+    def get(leagueid)
+      check_auth!(leagueid, true)
+      @feeschedules = $pdd.get_feeschedules(@leagueid)
+      render :feeschedules
+    end
+    def post(leagueid)
+      check_auth!(leagueid, true)
+      $pdd.create_feeschedule(leagueid, input)
+      redirect R(Feeschedules, leagueid)
+    end
+  end
+
+  class Feeschedule < R '/feeschedule/(\d+)'
+    def post(feescheduleid)
+      feeschedule = $pdd.get_feeschedule(feescheduleid)
+      check_auth!(feeschedule['leagueid'], true)
+      if input.operation == 'delete'
+        $pdd.delete_feeschedule(feescheduleid)
+      else
+        @input['amount'] = parse_money(@input['amount'])
+        updates = hashgrep(@input, 'name', 'amount', 'intervalid')
+        $pdd.update_feeschedule(feescheduleid, updates)
+      end
+      redirect R(Feeschedules, @leagueid)
+    end
+    def get(feescheduleid)
+      @feeschedule = $pdd.get_feeschedule(feescheduleid)
+      check_auth!(@feeschedule['leagueid'], true)
+      render :feeschedule
+    end
+  end
+  class FeescheduleNew < R '/league/(\d+)/feeschedule/new'
+    def get(leagueid)
+      check_auth!(leagueid, true)
+      render :feeschedule
+    end
+    def post(leagueid)
+      check_auth!(leagueid, true)
+      $pdd.add_feeschedule(@leagueid, input.name, input.intervalid,
+                           parse_money(input.amount))
+      @success = "Created feeschedule ... (...)"
+      redirect R(Feeschedules, leagueid)
+    end
+  end
+
   class Style < R '/style.css'
     def get
       @headers['Content-Type'] = 'text/css; charset=utf-8'

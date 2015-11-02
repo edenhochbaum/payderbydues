@@ -22,8 +22,25 @@ module PayDerbyDues::Helpers
   def format_money(amount)
     sprintf "$%d.%02d", amount / 100, amount % 100
   end
+
+  INTERVALS = ["One-time", "Annually", "Monthly", "Weekly", "Daily"]
+  def format_interval(interval)
+    return INTERVALS[interval]
+  end
+
+  def interval_options(name, current)
+    select :name => name do
+      INTERVALS.each_index do |i|
+        if current == i
+          option INTERVALS[i], :value => i.to_s, :selected => 1
+        else
+          option INTERVALS[i], :value => i.to_s
+        end
+      end
+    end
+  end
   def parse_money(amount)
-    amount =~ /^\s*(\d+)(?:\.(\d{2}))?\s*/ or raise Exception.new("Couldn't parse money")
+    amount =~ /^\s*\$?\s*(\d+)(?:\.(\d{2}))?\s*/ or raise Exception.new("Couldn't parse money")
     return $1.to_i * 100 + $2.to_i
   end
   def send_email(email, name, token)
@@ -37,6 +54,10 @@ module PayDerbyDues::Helpers
     if !status
       raise Exception.new("Couldn't send email #{$?}")
     end
+  end
+
+  def hashgrep(hash, *keys)
+    hash.select { |k, v| keys.include? k }
   end
 
   def crudfields(*fields)
