@@ -58,6 +58,10 @@
 			{
 				"name": "duedate",
 				"datatype": "date"
+			},
+			{
+				"name": "feescheduleid",
+				"foreigntablename": "feeschedule"
 			}
 		],
 		"uniquenessconstraints": [
