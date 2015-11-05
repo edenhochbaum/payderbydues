@@ -33,6 +33,10 @@
 			{
 				"name": "interval",
 				"datatype": "interval"
+			},
+			{
+				"name": "unit",
+				"dataype": "character varying(10)"
 			}
 		]
 	},
