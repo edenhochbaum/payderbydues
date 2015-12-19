@@ -10,19 +10,18 @@ use Plack::Request;
 use Plack::Response;
 
 # each takes in ($match, $env) and returns $body #
-
-sub rollout {
-	PayDerbyDues::View::render_layout('rollout', {
-		title => 'rollout',
-		rollout => 1,
-		loggedinas => $PayDerbyDues::RequestGlobalData::user->{USERLEGALNAME},
-	});
-}
-
 sub who {
 	PayDerbyDues::View::render_layout('who', {
 		title => 'who',
 		who => 1,
+		loggedinas => $PayDerbyDues::RequestGlobalData::user->{USERLEGALNAME},
+	});
+}
+
+sub signup {
+	PayDerbyDues::View::render_layout('signup', {
+		title => 'signup',
+		signup => 1,
 		loggedinas => $PayDerbyDues::RequestGlobalData::user->{USERLEGALNAME},
 	});
 }
