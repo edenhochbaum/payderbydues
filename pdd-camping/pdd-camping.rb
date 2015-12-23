@@ -1,3 +1,5 @@
+require 'camping'
+
 Camping.goes :PayDerbyDues
 
 require_relative 'pdd-data'
