@@ -13,7 +13,9 @@ require 'dbi'
 module PayDerbyDues
   class Data
     def initialize()
-      @dbh = DBI.connect("DBI:Pg:payderbydues", ENV['DBUSERNAME'], ENV['DBPASSWORD'])
+      hostpart = ";host=#{ENV['DBHOST']}" if ENV['DBHOST']
+      @dbh = DBI.connect("DBI:Pg:payderbydues#{hostpart}",
+                         ENV['DBUSERNAME'], ENV['DBPASSWORD'])
     end
 
     def members(leagueid)
