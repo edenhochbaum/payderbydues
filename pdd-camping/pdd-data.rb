@@ -13,7 +13,7 @@ require 'dbi'
 module PayDerbyDues
   class Data
     def initialize()
-      hostpart = ";host=#{ENV['DBHOST']}" if ENV['DBHOST']
+      hostpart = ":#{ENV['DBHOST']}" if ENV['DBHOST']
       @dbh = DBI.connect("DBI:Pg:payderbydues#{hostpart}",
                          ENV['DBUSERNAME'], ENV['DBPASSWORD'])
     end
