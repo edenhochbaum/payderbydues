@@ -9,7 +9,7 @@ module PayDerbyDues::Helpers
     end
     @leagueid = league.to_i
     @memberinfo = $pdd.get_leaguemember(@leagueid, @memberid)
-    if !@memberinfo
+    if !(@memberinfo[0] rescue nil)
       r(403, "You are not a member of this league!")
       throw :halt
     end
