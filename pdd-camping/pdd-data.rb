@@ -185,14 +185,16 @@ module PayDerbyDues
     end
 
     def login(username, password)
-      (memberid, hash) = @dbh.select_one(%q{select id, password from member
+      row = @dbh.select_one(%q{select id, password from member
                                        where email = ?}, username)
-      return nil unless memberid
+      return nil unless row
+      (memberid, hash) = [row[0], row[1]]
       pw = BCrypt::Password.new(hash)
-      if pw == password
+      if memberid and pw == password
         return add_token(memberid)
+      else
+        return nil
       end
-      return nil
     end
   end
 end
